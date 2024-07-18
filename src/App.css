@@ -1,0 +1,12 @@
+.grid-container {
+  min-height: 300px;
+}
+
+.interaction-box {
+  transition: opacity 0.3s;
+  height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
