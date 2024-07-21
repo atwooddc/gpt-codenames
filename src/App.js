@@ -4,6 +4,7 @@ import IntroPopUp from "./components/IntroPopUp";
 import RoleSelectionPopUp from "./components/RoleSelectionPopUp";
 import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
+import Switch from "./components/Switch";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
@@ -16,6 +17,7 @@ const App = () => {
     const [showRoleSelection, setShowRoleSelection] = useState(false);
     const [showClueInput, setShowClueInput] = useState(false);
     const [error, setError] = useState(null);
+    const [tableTalkEnabled, setTableTalkEnabled] = useState(false);
 
     const [guessQueue, setGuessQueue] = useState([]);
     const [isProcessingGuess, setIsProcessingGuess] = useState(false);
@@ -24,6 +26,9 @@ const App = () => {
     const [gameMessage, setGameMessage] = useState("");
     const [gameOver, setGameOver] = useState(false);
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
+
+    // toggle Table Talk
+    const toggleTableTalk = () => setTableTalkEnabled(!tableTalkEnabled);
 
     const fetchWords = async () => {
         const gameWords = await loadWords();
@@ -53,7 +58,9 @@ const App = () => {
         console.log(clue, ",", number);
         setShowClueInput(false);
         setGameMessage(
-            `Your clue is '${toTitleCase(clue)}', ${number}. The GPT is thinking...`
+            `Your clue is '${toTitleCase(
+                clue
+            )}', ${number}. The GPT is thinking...`
         );
         await getGuesses(clue, number);
     };
@@ -93,7 +100,7 @@ const App = () => {
             }, DELAY);
         }
     }, [guessQueue, isProcessingGuess]);
-    
+
     // process each guess in the guessQueue
     const processGuess = (guess) => {
         const wordIndex = words.findIndex(
@@ -145,7 +152,9 @@ const App = () => {
         console.log("GPT turn");
         const [clue, number] = await getGPTClue();
         console.log(clue, ",", number);
-        setGameMessage(`The GPT spymaster's clue is '${toTitleCase(clue)}', ${number}.`);
+        setGameMessage(
+            `The GPT spymaster's clue is '${toTitleCase(clue)}', ${number}.`
+        );
         setTimeout(async () => {
             await getGuesses({ clue, number });
         }, DELAY);
@@ -197,7 +206,6 @@ const App = () => {
             setError(`Error fetching clue: ${error}`);
         }
     };
-
 
     // end turn and switch to next turn
     const endTurn = () => {
@@ -275,6 +283,13 @@ const App = () => {
                 {gameOver && (
                     <GameOverPopUp result={gameResult} onRestart={resetGame} />
                 )}
+            </div>
+            <div className="absolute bottom-4 right-8">
+                <Switch
+                    label={"TABLE TALK"}
+                    enabled={tableTalkEnabled}
+                    toggle={toggleTableTalk}
+                />
             </div>
         </div>
     );
