@@ -1,9 +1,12 @@
 import React from "react";
 
-const Switch = ({label, enabled, toggle}) => {
+const Switch = ({ label, enabled, toggle }) => {
     return (
         <>
             <label className="themeSwitcherTwo relative inline-flex cursor-pointer select-none items-center">
+                <span className="label flex items-center text-sm font-medium text-black">
+                    {label}
+                </span>
                 <input
                     type="checkbox"
                     checked={enabled}
@@ -20,9 +23,6 @@ const Switch = ({label, enabled, toggle}) => {
                             enabled ? "translate-x-[28px]" : ""
                         }`}
                     ></span>
-                </span>
-                <span className="label flex items-center text-sm font-medium text-black">
-                    {label}
                 </span>
             </label>
         </>

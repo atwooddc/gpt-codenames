@@ -4,6 +4,7 @@ import IntroPopUp from "./components/IntroPopUp";
 import RoleSelectionPopUp from "./components/RoleSelectionPopUp";
 import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
+import ModelSelector from "./components/ModelSelector";
 import Switch from "./components/Switch";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
@@ -16,8 +17,11 @@ const App = () => {
     const [showIntro, setShowIntro] = useState(true);
     const [showRoleSelection, setShowRoleSelection] = useState(false);
     const [showClueInput, setShowClueInput] = useState(false);
+
     const [error, setError] = useState(null);
     const [tableTalkEnabled, setTableTalkEnabled] = useState(false);
+
+    const [model, setModel] = useState("gpt-4o");
 
     const [guessQueue, setGuessQueue] = useState([]);
     const [isProcessingGuess, setIsProcessingGuess] = useState(false);
@@ -76,7 +80,7 @@ const App = () => {
         };
 
         const data = await fetchAPI(
-            "http://localhost:3001/gpt-field-operative",
+            `http://localhost:3001/gpt-field-operative?model=${model}`,
             "POST",
             body
         );
@@ -193,7 +197,7 @@ const App = () => {
 
         try {
             const data = await fetchAPI(
-                "http://localhost:3001/gpt-spymaster",
+                `http://localhost:3001/gpt-spymaster?model=${model}`,
                 "POST",
                 body
             );
@@ -284,9 +288,10 @@ const App = () => {
                     <GameOverPopUp result={gameResult} onRestart={resetGame} />
                 )}
             </div>
-            <div className="absolute bottom-4 right-8">
+            <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
+                <ModelSelector model={model} setModel={setModel} />
                 <Switch
-                    label={"TABLE TALK"}
+                    label={"Table Talk"}
                     enabled={tableTalkEnabled}
                     toggle={toggleTableTalk}
                 />
