@@ -8,7 +8,7 @@ module.exports = {
           'blue-team': '#17739e',
           'bystander': '#aeae99',
           'assassin': '#060505',
-          'manila': '#cfbd94'
+          'manila': '#cfbd94',
       },
     },
   },

@@ -9,7 +9,7 @@ const IntroPopUp = ({ onStart }) => {
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75">
-            <div className="bg-white p-8 rounded shadow-lg text-center max-w-prose" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <div className="bg-white p-8 rounded shadow-lg text-center max-w-prose z-1000" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 <h1 className="text-3xl font-bold mb-4">Welcome to GPT Codenames</h1>
                 <p>If you've played before, jump right in!<br /></p>
                 <p>If not, check out the rules below or in <i><a href="https://czechgames.com/files/rules/codenames-rules-en.pdf">the official rulebook</a></i>.<br /><br /></p>

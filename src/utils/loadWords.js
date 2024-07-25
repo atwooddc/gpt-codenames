@@ -9,7 +9,7 @@ export const loadWords = async () => {
     if (index < 9) return { "word": word, team: "user", isGuessed: false };
     if (index < 17) return { "word": word, team: "computer", isGuessed: false };
     if (index < 24) return { "word": word, team: "bystander", isGuessed: false };
-    return { "word": word.toUpperCase(), team: "assassin", isGuessed: false };
+    return { "word": word, team: "assassin", isGuessed: false };
   });
 
   return gameWords.sort(() => 0.5 - Math.random());

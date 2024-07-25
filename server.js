@@ -15,7 +15,10 @@ const openai = new OpenAI({
 
 app.post("/gpt-field-operative", async (req, res) => {
     try {
+        // console.log(req.body.model);
+
         const { clue, number, unguessedWords } = req.body;
+        const model = req.query.model || "gpt-4o";
 
         const inputJson = {
             clue,
@@ -24,23 +27,15 @@ app.post("/gpt-field-operative", async (req, res) => {
         };
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: model,
             messages: [
                 {
                     role: "system",
                     content: `
-                    Acts as a guesser for the table game Codenames. 
-                    Receives as input a stringified JSON object of the format 
-                    {
-                        clue,
-                        number,
-                        words
-                    }
-                    representing the clue 'clue' to 'number' of words in 'words'. 
-                    Returns ONLY an array with a subset of the remaining words 
-                    that relate most to the clue in the format ["Guess1","Guess2,...]
-                    The guesses should be ordered from most to least confident.
-                    The most important thing is that the words that you return are in the 'words' array. 
+                    Role: Codenames guesser.
+                    Input: stringified JSON {clue, number, unguessedWords}.
+                    Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, ["Guess1", "Guess2", ...], sorted by confidence.
+                    Ensure selected words are from 'words'. Return nothing else besides the array.
                     `,
                 },
                 {
@@ -55,9 +50,56 @@ app.post("/gpt-field-operative", async (req, res) => {
             return;
         }
 
-        const guesses = JSON.parse(response.choices[0].message.content).map(
-            (guess) => guess.trim()
-        );
+        const rawContent = response.choices[0].message.content;
+        // console.log("Raw Content:", rawContent);
+
+        const guesses = JSON.parse(rawContent).map((guess) => guess.trim());
+
+        res.json({ guesses });
+    } catch (error) {
+        console.error("Error communicating with OpenAI:", error);
+        res.status(500).json({ error: "Error communicating with OpenAI" });
+    }
+});
+
+app.post("/gpt-field-operative/explanation", async (req, res) => {
+    try {
+        const { clue, number, unguessedWords } = req.body;
+
+        const inputJson = {
+            clue,
+            number,
+            unguessedWords,
+        };
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                {
+                    role: "system",
+                    content: `
+                    Role: Codenames guesser.
+                    Input: stringified JSON {clue, number, unguessedWords}.
+                    ONLY an array of length 'number' containing {"word": "explanation"} pairs, ordered by relevance to the clue. 
+                    Ensure selected words are from 'words'. Return nothing else besides the array.
+                    `,
+                },
+                {
+                    role: "user",
+                    content: JSON.stringify(inputJson),
+                },
+            ],
+        });
+
+        if (!response.choices || !response.choices[0].message.content) {
+            res.status(500).json({ error: "Invalid response from OpenAI" });
+            return;
+        }
+
+        const rawContent = response.choices[0].message.content;
+        console.log("Raw Content:", rawContent);
+
+        const guesses = JSON.parse(rawContent).map((guess) => guess.trim());
 
         res.json({ guesses });
     } catch (error) {
@@ -71,6 +113,8 @@ app.post("/gpt-spymaster", async (req, res) => {
         const { teamWords, otherTeamWords, bystanderWords, assassinWord } =
             req.body;
 
+        const model = req.query.model || "gpt-4o";
+
         const inputJson = {
             teamWords,
             otherTeamWords,
@@ -79,25 +123,15 @@ app.post("/gpt-spymaster", async (req, res) => {
         };
 
         const response = await openai.chat.completions.create({
-            model: "gpt-4o",
+            model: model,
             messages: [
                 {
                     role: "system",
                     content: `
-                    Acts as spymaster (clue generator) for the table game Codenames. 
-                    Receives as input a stringified JSON object of the format 
-                    {team,otherTeam,bystanders,assassin} representing 
-                    the remaining words on its own team (team), remaining 
-                    words on the other team (otherTeam), bystander words, and the assassin. 
-                    The spymaster provides a one-word clue to any number of their team's words. 
-                    When selecting a one-word clue, the spymaster considers the association 
-                    to its own team's words (positive), the association to the bystander words 
-                    (negative), the association to the other team's words (very negative), 
-                    and the association to the assassin word (to be avoided at all costs). 
-                    Prioritize clarity and risk aversion over giving multi-word clues.
-
-                    Returns ONLY an array with the clue followed by a string containing an integer
-                    representing the number of words clued: ["clue", "number"], ex. ["water", "1"]
+                    Role: Acts as the spymaster for Codenames, generating clues.
+                    Input: Receives a JSON object {teamWords, otherTeamWords, bystanders, assassin} with words from different categories.
+                    Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassin'.
+                    Output: Returns ONLY an array with the clue and the number of target words: ["clue", "number"]. Example: ["water", "1"]. Again, ONLY return an array.
                     `,
                 },
                 {

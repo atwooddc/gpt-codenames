@@ -4,6 +4,7 @@ import IntroPopUp from "./components/IntroPopUp";
 import RoleSelectionPopUp from "./components/RoleSelectionPopUp";
 import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
+import ModelSelector from "./components/ModelSelector";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
@@ -15,7 +16,11 @@ const App = () => {
     const [showIntro, setShowIntro] = useState(true);
     const [showRoleSelection, setShowRoleSelection] = useState(false);
     const [showClueInput, setShowClueInput] = useState(false);
+
     const [error, setError] = useState(null);
+    const [tableTalkEnabled, setTableTalkEnabled] = useState(false);
+
+    const [model, setModel] = useState("gpt-4o");
 
     const [guessQueue, setGuessQueue] = useState([]);
     const [isProcessingGuess, setIsProcessingGuess] = useState(false);
@@ -24,6 +29,9 @@ const App = () => {
     const [gameMessage, setGameMessage] = useState("");
     const [gameOver, setGameOver] = useState(false);
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
+
+    // toggle Table Talk
+    const toggleTableTalk = () => setTableTalkEnabled(!tableTalkEnabled);
 
     const fetchWords = async () => {
         const gameWords = await loadWords();
@@ -53,7 +61,9 @@ const App = () => {
         console.log(clue, ",", number);
         setShowClueInput(false);
         setGameMessage(
-            `Your clue is '${toTitleCase(clue)}', ${number}. The GPT is thinking...`
+            `Your clue is '${toTitleCase(
+                clue
+            )}', ${number}. The GPT is thinking...`
         );
         await getGuesses(clue, number);
     };
@@ -69,7 +79,7 @@ const App = () => {
         };
 
         const data = await fetchAPI(
-            "http://localhost:3001/gpt-field-operative",
+            `http://localhost:3001/gpt-field-operative?model=${model}`,
             "POST",
             body
         );
@@ -93,7 +103,7 @@ const App = () => {
             }, DELAY);
         }
     }, [guessQueue, isProcessingGuess]);
-    
+
     // process each guess in the guessQueue
     const processGuess = (guess) => {
         const wordIndex = words.findIndex(
@@ -145,7 +155,9 @@ const App = () => {
         console.log("GPT turn");
         const [clue, number] = await getGPTClue();
         console.log(clue, ",", number);
-        setGameMessage(`The GPT spymaster's clue is '${toTitleCase(clue)}', ${number}.`);
+        setGameMessage(
+            `The GPT spymaster's clue is '${toTitleCase(clue)}', ${number}.`
+        );
         setTimeout(async () => {
             await getGuesses({ clue, number });
         }, DELAY);
@@ -184,7 +196,7 @@ const App = () => {
 
         try {
             const data = await fetchAPI(
-                "http://localhost:3001/gpt-spymaster",
+                `http://localhost:3001/gpt-spymaster?model=${model}`,
                 "POST",
                 body
             );
@@ -197,7 +209,6 @@ const App = () => {
             setError(`Error fetching clue: ${error}`);
         }
     };
-
 
     // end turn and switch to next turn
     const endTurn = () => {
@@ -275,6 +286,9 @@ const App = () => {
                 {gameOver && (
                     <GameOverPopUp result={gameResult} onRestart={resetGame} />
                 )}
+            </div>
+            <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
+                <ModelSelector model={model} setModel={setModel} />
             </div>
         </div>
     );
