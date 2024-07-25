@@ -5,6 +5,7 @@ import RoleSelectionPopUp from "./components/RoleSelectionPopUp";
 import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
 import ModelSelector from "./components/ModelSelector";
+import Switch from "./components/Switch";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
@@ -289,6 +290,11 @@ const App = () => {
             </div>
             <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
                 <ModelSelector model={model} setModel={setModel} />
+                <Switch
+                    label={"Table Talk"}
+                    enabled={tableTalkEnabled}
+                    toggle={toggleTableTalk}
+                />
             </div>
         </div>
     );
