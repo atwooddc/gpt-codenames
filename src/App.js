@@ -5,12 +5,12 @@ import RoleSelectionPopUp from "./components/RoleSelectionPopUp";
 import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
 import ModelSelector from "./components/ModelSelector";
+import GameMessage from "./components/GameMessage";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
 
 const App = () => {
-
     const [words, setWords] = useState([]);
     const [showIntro, setShowIntro] = useState(true);
     const [showRoleSelection, setShowRoleSelection] = useState(false);
@@ -20,6 +20,7 @@ const App = () => {
 
     const [model, setModel] = useState("gpt-4o");
 
+    const [currentGuess, setCurrentGuess] = useState("");
     const [guessQueue, setGuessQueue] = useState([]);
     const [isProcessingGuess, setIsProcessingGuess] = useState(false);
 
@@ -32,6 +33,13 @@ const App = () => {
     const fetchWords = async () => {
         const gameWords = await loadWords();
         setWords(gameWords);
+    };
+
+    const currentGuessTeam = (currentGuess) => {
+        const wordObj = words.find(
+            (word) => word.word.toUpperCase() === currentGuess
+        );
+        return wordObj ? wordObj.team : null;
     };
 
     // load words on first render
@@ -106,6 +114,7 @@ const App = () => {
 
     // process each guess in the guessQueue
     const processGuess = (guess) => {
+        setCurrentGuess(guess.toUpperCase());
         const wordIndex = words.findIndex(
             (word) => word.word === guess && !word.isGuessed
         );
@@ -113,7 +122,9 @@ const App = () => {
             if (words[wordIndex].team === "assassin") {
                 setGameOver(true);
                 setGameResult(currentTurn === "user" ? "lose" : "win");
-                setGameMessage(`Guess '${guess}' was the assassin. Game over!`);
+                setGameMessage(
+                    `Guess ${guess.toUpperCase()} was the assassin. Game over!`
+                );
                 setIsProcessingGuess(false);
             } else if (words[wordIndex].team !== currentTurn) {
                 setWords((prevWords) =>
@@ -122,7 +133,7 @@ const App = () => {
                     )
                 );
                 setGameMessage(
-                    `Guess '${guess}' is ${
+                    `Guess ${guess.toUpperCase()} is ${
                         words[wordIndex].team !== "bystander"
                             ? "an enemy agent"
                             : "a bystander"
@@ -259,6 +270,7 @@ const App = () => {
         setCurrentTurn("user");
         setShowClueInput(false);
         setGameMessage("");
+        setClickToAdvance(false);
     };
 
     return (
@@ -270,7 +282,11 @@ const App = () => {
                 {words.length > 0 ? <Grid words={words} /> : <p>Loading...</p>}
             </div>
             <div className="interaction-box flex flex-col items-center justify-center w-full mt-8">
-                {gameMessage && <p className="text-lg h-8">{gameMessage}</p>}
+                <GameMessage
+                    gameMessage={gameMessage}
+                    currentGuess={currentGuess}
+                    guessTeam={currentGuessTeam(currentGuess)}
+                />
                 {showClueInput &&
                     currentTurn === "user" &&
                     !isProcessingGuess && (
