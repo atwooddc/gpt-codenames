@@ -28,42 +28,40 @@ const ClueInput = ({ onSubmitClue, show, words }) => {
     };
 
     return (
-        <div
-            className={`flex items-center space-x-4 h-8 ${
-                show ? "" : "invisible"
-            }`}
-        >
-            <input
-                type="text"
-                value={clue}
-                onChange={handleClueChange}
-                className={`border-4 p-2 rounded ${
-                    hasSpace || isInvalidWord
-                        ? "border-red-500"
-                        : "border-gray-300"
-                }`}
-                placeholder="Enter one-word clue"
-            />
-            <input
-                type="number"
-                value={numCards}
-                onChange={handleNumCardsChange}
-                min="1"
-                max="9"
-                className="border-4 p-2 rounded border-gray-300"
-            />
-            <button
-                onClick={handleSubmit}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-                disabled={hasSpace || isInvalidWord || clue.trim() === ""}
-            >
-                Submit
-            </button>
-            {isInvalidWord && (
+        <div className={`flex flex-col space-y-4 ${show ? "" : "invisible"}`}>
+            <div className="flex items-center space-x-4 h-8">
+                <input
+                    type="text"
+                    value={clue}
+                    onChange={handleClueChange}
+                    className={`border-4 p-2 rounded ${
+                        hasSpace || isInvalidWord
+                            ? "border-red-500"
+                            : "border-gray-300"
+                    }`}
+                    placeholder="Enter one-word clue"
+                />
+                <input
+                    type="number"
+                    value={numCards}
+                    onChange={handleNumCardsChange}
+                    min="1"
+                    max="9"
+                    className="border-4 p-2 rounded border-gray-300"
+                />
+                <button
+                    onClick={handleSubmit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded"
+                    disabled={hasSpace || isInvalidWord || clue.trim() === ""}
+                >
+                    Submit
+                </button>
+            </div>
+            {/* {isInvalidWord && (
                 <p className="text-red-500">
                     Clue cannot be one of the game words!
                 </p>
-            )}
+            )} */}
         </div>
     );
 };

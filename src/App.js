@@ -27,6 +27,7 @@ const App = () => {
 
     const [currentTurn, setCurrentTurn] = useState("user"); // 'user' or 'computer'
     const [gameMessage, setGameMessage] = useState("");
+    const [clickToAdvance, setClickToAdvance] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
 
@@ -63,9 +64,10 @@ const App = () => {
         setGameMessage(
             `Your clue is '${toTitleCase(
                 clue
-            )}', ${number}. The GPT is thinking...`
+            )}', ${number}. Your GPTeammate is thinking...`
         );
         await getGuesses(clue, number);
+        setClickToAdvance(true);
     };
 
     // get guesses from GPT API
@@ -87,21 +89,24 @@ const App = () => {
 
         setGuessQueue(data.guesses);
         setIsProcessingGuess(true);
+        setClickToAdvance(true);
     };
 
-    // process guesses whenever guessQueue or isProcessingGuess changes
     useEffect(() => {
-        if (guessQueue.length > 0 && isProcessingGuess) {
-            const nextGuess = guessQueue[0];
+        const handleClick = (event) => {
+            if (!event.target.closest(".action")) {
+                // Ensure the click is not on interactive elements
+                if (guessQueue.length > 0 && isProcessingGuess) {
+                    processGuess(guessQueue[0]);
+                } else if (isProcessingGuess) {
+                    endTurn();
+                    setClickToAdvance(false); // reset clickToAdvance when queue is empty
+                }
+            }
+        };
 
-            setTimeout(() => {
-                processGuess(nextGuess);
-            }, DELAY);
-        } else if (isProcessingGuess) {
-            setTimeout(() => {
-                endTurn();
-            }, DELAY);
-        }
+        document.addEventListener("click", handleClick);
+        return () => document.removeEventListener("click", handleClick);
     }, [guessQueue, isProcessingGuess]);
 
     // process each guess in the guessQueue
@@ -140,6 +145,7 @@ const App = () => {
             }
         } else {
             endTurn();
+            setClickToAdvance(true);
         }
     };
 
@@ -152,19 +158,20 @@ const App = () => {
 
     // simulate GPT turn by getting clue and then getting guesses
     const simulateGPTTurn = async () => {
+        setClickToAdvance(false);
         console.log("GPT turn");
         const [clue, number] = await getGPTClue();
         console.log(clue, ",", number);
         setGameMessage(
             `The GPT spymaster's clue is '${toTitleCase(clue)}', ${number}.`
         );
-        setTimeout(async () => {
-            await getGuesses({ clue, number });
-        }, DELAY);
+        await getGuesses({ clue, number });
     };
 
     // get clue from GPT API
     const getGPTClue = async () => {
+        setGameMessage("The GPT Spymaster is thinking...");
+        setClickToAdvance(false);
         const team = words
             .filter((word) => word.team === "computer" && !word.isGuessed)
             .map((word) => word.word);
@@ -268,7 +275,6 @@ const App = () => {
                 {words.length > 0 ? <Grid words={words} /> : <p>Loading...</p>}
             </div>
             <div className="interaction-box flex flex-col items-center justify-center w-full mt-8">
-                {error && <div className="text-red-500">{error}</div>}
                 {gameMessage && <p className="text-lg h-8">{gameMessage}</p>}
                 {showClueInput &&
                     currentTurn === "user" &&
@@ -279,6 +285,12 @@ const App = () => {
                             words={words.map((word) => word.word.toUpperCase())}
                         />
                     )}
+                {clickToAdvance && (
+                    <p className="text-lg h-8 text-gray-500 absolute bottom-16">
+                        <i>{"Click to advance"}</i>
+                    </p>
+                )}
+                {error && <div className="text-red-500">{error}</div>}
                 {showIntro && <IntroPopUp onStart={startGame} />}
                 {showRoleSelection && (
                     <RoleSelectionPopUp onSelectRole={selectRole} />

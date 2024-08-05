@@ -53,7 +53,10 @@ const ModelSelector = ({ model, setModel }) => {
                         className={`flex-auto text-center px-3 py-2 rounded-xl transition-colors duration-200 text-sm ${
                             model === m ? "text-black z-10" : "text-gray-500"
                         }`}
-                        onClick={() => setModel(m)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setModel(m);
+                        }}
                         style={{ position: 'relative' }}
                     >
                         {m.replace("gpt-", "")}
