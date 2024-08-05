@@ -10,7 +10,6 @@ import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
 
 const App = () => {
-    const DELAY = 2000;
 
     const [words, setWords] = useState([]);
     const [showIntro, setShowIntro] = useState(true);
@@ -18,7 +17,6 @@ const App = () => {
     const [showClueInput, setShowClueInput] = useState(false);
 
     const [error, setError] = useState(null);
-    const [tableTalkEnabled, setTableTalkEnabled] = useState(false);
 
     const [model, setModel] = useState("gpt-4o");
 
@@ -30,9 +28,6 @@ const App = () => {
     const [clickToAdvance, setClickToAdvance] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
-
-    // toggle Table Talk
-    const toggleTableTalk = () => setTableTalkEnabled(!tableTalkEnabled);
 
     const fetchWords = async () => {
         const gameWords = await loadWords();
