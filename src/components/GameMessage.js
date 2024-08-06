@@ -33,7 +33,7 @@ const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
                         <div
                             id="tooltip-animation"
                             role="tooltip"
-                            className="absolute z-10 invisible inline-block px-3 py-2 text-sm font-normal font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:visible group-hover:opacity-100 dark:bg-gray-700"
+                            className="absolute z-10 invisible inline-block px-3 py-2 w-96 text-sm font-normal font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:visible group-hover:opacity-100 dark:bg-gray-700"
                             style={{ top: '100%' }}
                         >
                             {explanation}

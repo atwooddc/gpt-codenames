@@ -6,6 +6,7 @@ import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
 import ModelSelector from "./components/ModelSelector";
 import GameMessage from "./components/GameMessage";
+import Switch from "./components/Switch";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
@@ -19,6 +20,8 @@ const App = () => {
     const [error, setError] = useState(null);
 
     const [model, setModel] = useState("gpt-4o");
+    const [explanation, setExplanation] = useState("");
+    const [useExplanation, setUseExplanation] = useState(false);
 
     const [currentGuess, setCurrentGuess] = useState("");
     const [guessQueue, setGuessQueue] = useState([]);
@@ -33,13 +36,6 @@ const App = () => {
     const fetchWords = async () => {
         const gameWords = await loadWords();
         setWords(gameWords);
-    };
-
-    const currentGuessTeam = (currentGuess) => {
-        const wordObj = words.find(
-            (word) => word.word.toUpperCase() === currentGuess
-        );
-        return wordObj ? wordObj.team : null;
     };
 
     // load words on first render
@@ -84,7 +80,9 @@ const App = () => {
         };
 
         const data = await fetchAPI(
-            `http://localhost:3001/gpt-field-operative?model=${model}`,
+            `http://localhost:3001/gpt-field-operative?model=${model}&explanation=${
+                useExplanation ? 1 : 0
+            }`,
             "POST",
             body
         );
@@ -100,7 +98,14 @@ const App = () => {
             if (!event.target.closest(".action")) {
                 // Ensure the click is not on interactive elements
                 if (guessQueue.length > 0 && isProcessingGuess) {
-                    processGuess(guessQueue[0]);
+                    if (typeof guessQueue[0] === "object") {
+                        setCurrentGuess(guessQueue[0].guess.toUpperCase());
+                        setExplanation(guessQueue[0].explanation);
+                        processGuess(guessQueue[0].guess);
+                    } else {
+                        setCurrentGuess(guessQueue[0].toUpperCase());
+                        processGuess(guessQueue[0]);
+                    }
                 } else if (isProcessingGuess) {
                     endTurn();
                     setClickToAdvance(false); // reset clickToAdvance when queue is empty
@@ -114,7 +119,6 @@ const App = () => {
 
     // process each guess in the guessQueue
     const processGuess = (guess) => {
-        setCurrentGuess(guess.toUpperCase());
         const wordIndex = words.findIndex(
             (word) => word.word === guess && !word.isGuessed
         );
@@ -273,6 +277,15 @@ const App = () => {
         setClickToAdvance(false);
     };
 
+    const currentGuessTeam = (currentGuess) => {
+        const wordObj = words.find(
+            (word) => word.word.toUpperCase() === currentGuess
+        );
+        return wordObj ? wordObj.team : null;
+    };
+
+    const toggleUseExplanation = () => setUseExplanation(!useExplanation);
+
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
             <div
@@ -286,6 +299,7 @@ const App = () => {
                     gameMessage={gameMessage}
                     currentGuess={currentGuess}
                     guessTeam={currentGuessTeam(currentGuess)}
+                    explanation={explanation}
                 />
                 {showClueInput &&
                     currentTurn === "user" &&
@@ -311,6 +325,11 @@ const App = () => {
                 )}
             </div>
             <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
+                <Switch
+                    label={"Include guess explanation"}
+                    enabled={useExplanation}
+                    toggle={toggleUseExplanation}
+                />
                 <ModelSelector model={model} setModel={setModel} />
             </div>
         </div>

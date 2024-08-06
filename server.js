@@ -18,71 +18,41 @@ app.post("/gpt-field-operative", async (req, res) => {
         // console.log(req.body.model);
 
         const { clue, number, unguessedWords } = req.body;
+
         const model = req.query.model || "gpt-4o";
+
+        const explanation = req.query.explanation || 0;
 
         const inputJson = {
             clue,
             number,
             unguessedWords,
         };
+
+        let systemContent = `
+                    Role: Codenames guesser.
+                    Input: stringified JSON {clue, number, unguessedWords}.
+                    Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, ["Guess1", "Guess2", ...], sorted by confidence.
+                    Ensure selected words are from 'words'. Return nothing else besides the array.
+                    `;
+
+        if (explanation != 0) {
+            systemContent = `
+                    Role: Codenames guesser.
+                    Input: stringified JSON {clue, number, unguessedWords}.
+                    Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, each with a one sentence explanation of how they relate to 'clue' [{guess: "Guess1", explanation: "Explanation1"}, {guess: "Guess2", explanation: "Explanation2"}, ...], sorted by confidence.
+                    Ensure selected words are from 'words'. Return nothing else besides the array.
+                    `;
+        }
+
+        console.log(systemContent);
 
         const response = await openai.chat.completions.create({
             model: model,
             messages: [
                 {
                     role: "system",
-                    content: `
-                    Role: Codenames guesser.
-                    Input: stringified JSON {clue, number, unguessedWords}.
-                    Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, ["Guess1", "Guess2", ...], sorted by confidence.
-                    Ensure selected words are from 'words'. Return nothing else besides the array.
-                    `,
-                },
-                {
-                    role: "user",
-                    content: JSON.stringify(inputJson),
-                },
-            ],
-        });
-
-        if (!response.choices || !response.choices[0].message.content) {
-            res.status(500).json({ error: "Invalid response from OpenAI" });
-            return;
-        }
-
-        const rawContent = response.choices[0].message.content;
-        // console.log("Raw Content:", rawContent);
-
-        const guesses = JSON.parse(rawContent).map((guess) => guess.trim());
-
-        res.json({ guesses });
-    } catch (error) {
-        console.error("Error communicating with OpenAI:", error);
-        res.status(500).json({ error: "Error communicating with OpenAI" });
-    }
-});
-
-app.post("/gpt-field-operative/explanation", async (req, res) => {
-    try {
-        const { clue, number, unguessedWords } = req.body;
-
-        const inputJson = {
-            clue,
-            number,
-            unguessedWords,
-        };
-
-        const response = await openai.chat.completions.create({
-            model: "gpt-4o",
-            messages: [
-                {
-                    role: "system",
-                    content: `
-                    Role: Codenames guesser.
-                    Input: stringified JSON {clue, number, unguessedWords}.
-                    ONLY an array of length 'number' containing {"word": "explanation"} pairs, ordered by relevance to the clue. 
-                    Ensure selected words are from 'words'. Return nothing else besides the array.
-                    `,
+                    content: systemContent,
                 },
                 {
                     role: "user",
@@ -99,7 +69,9 @@ app.post("/gpt-field-operative/explanation", async (req, res) => {
         const rawContent = response.choices[0].message.content;
         console.log("Raw Content:", rawContent);
 
-        const guesses = JSON.parse(rawContent).map((guess) => guess.trim());
+        const guesses = JSON.parse(rawContent);
+        // const guesses = JSON.parse(rawContent).map((guess) => guess.trim());
+
 
         res.json({ guesses });
     } catch (error) {
@@ -122,17 +94,19 @@ app.post("/gpt-spymaster", async (req, res) => {
             assassinWord,
         };
 
+        let systemContent = `
+                    Role: Acts as the spymaster for Codenames, generating clues.
+                    Input: Receives a JSON object {teamWords, otherTeamWords, bystanders, assassin} with words from different categories.
+                    Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassin'.
+                    Output: Returns ONLY an array with the clue and the number of target words: ["clue", "number"]. Example: ["water", "1"]. Again, ONLY return an array.
+                    `;
+
         const response = await openai.chat.completions.create({
             model: model,
             messages: [
                 {
                     role: "system",
-                    content: `
-                    Role: Acts as the spymaster for Codenames, generating clues.
-                    Input: Receives a JSON object {teamWords, otherTeamWords, bystanders, assassin} with words from different categories.
-                    Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassin'.
-                    Output: Returns ONLY an array with the clue and the number of target words: ["clue", "number"]. Example: ["water", "1"]. Again, ONLY return an array.
-                    `,
+                    content: systemContent,
                 },
                 {
                     role: "user",
