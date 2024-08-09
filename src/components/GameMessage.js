@@ -1,7 +1,10 @@
-import React from "react";
+import { React, useState } from "react";
+import { GrCircleQuestion } from "react-icons/gr";
 import "./GameMessage.css";
 
 const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
+    const [questionHover, setQuestionHover] = useState(false);
+
     const getBorderColor = () => {
         switch (guessTeam) {
             case "user":
@@ -19,29 +22,35 @@ const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
         if (currentGuess && gameMessage.includes(currentGuess)) {
             const parts = gameMessage.split(currentGuess);
             return (
-                <>
+                <span className="flex items-center">
                     {parts[0]}
                     <span
-                        className={`current-guess font-mono tracking-wider text-black mx-1 relative group`}
-                        style={{
-                            fontSize: "clamp(0.5rem, 2vw, 1.1rem)",
-                            zIndex: 10,
-                            "--line-color": getBorderColor(),
-                        }}
+                        className={`hover-tooltip font-mono mx-1 tracking-wider text-black relative group flex items-center`}
                     >
-                        {currentGuess}
-                        <div
-                            id="tooltip-animation"
-                            role="tooltip"
-                            className="absolute z-10 invisible inline-block px-3 py-2 w-96 text-sm font-normal font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:visible group-hover:opacity-100 dark:bg-gray-700"
-                            style={{ top: '100%' }}
+                        <span
+                            className={`current-guess cursor-default mx-1 relative group flex items-center`}
+                            style={{
+                                fontSize: "clamp(0.5rem, 2vw, 1.1rem)",
+                                zIndex: 10,
+                                "--line-color": getBorderColor(),
+                            }}
                         >
-                            {explanation}
-                            <div className="tooltip-arrow" data-popper-arrow></div>
-                        </div>
+                            {currentGuess}
+                        </span>
+                        <span className={`question-icon -translate-y-px z-10`}>
+                            <GrCircleQuestion className="mr-0.5 text-gray-400 inline-block" />
+                            <div
+                                id="tooltip-animation"
+                                role="tooltip"
+                                className="absolute z-10 invisible inline-block px-3 py-2 w-96 text-sm font-normal font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:visible group-hover:opacity-100 dark:bg-gray-700"
+                                style={{ top: "100%" }}
+                            >
+                                {explanation}
+                            </div>
+                        </span>
                     </span>
                     {parts[1]}
-                </>
+                </span>
             );
         } else {
             return gameMessage;

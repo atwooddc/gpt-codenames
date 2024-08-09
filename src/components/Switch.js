@@ -15,7 +15,7 @@ const Switch = ({ label, enabled, toggle }) => {
                 />
                 <span
                     className={`slider mx-4 flex h-8 w-[60px] items-center rounded-full p-1 duration-200 ${
-                        enabled ? "bg-[#212b36]" : "bg-[#CCCCCE]"
+                        enabled ? "bg-[#4B5563]" : "bg-[#CCCCCE]"
                     }`}
                 >
                     <span

@@ -21,7 +21,7 @@ const App = () => {
 
     const [model, setModel] = useState("gpt-4o");
     const [explanation, setExplanation] = useState("");
-    const [useExplanation, setUseExplanation] = useState(false);
+    const [useExplanation, setUseExplanation] = useState(true);
 
     const [currentGuess, setCurrentGuess] = useState("");
     const [guessQueue, setGuessQueue] = useState([]);
@@ -30,6 +30,8 @@ const App = () => {
     const [currentTurn, setCurrentTurn] = useState("user"); // 'user' or 'computer'
     const [gameMessage, setGameMessage] = useState("");
     const [clickToAdvance, setClickToAdvance] = useState(false);
+
+    const [confirmReset, setConfirmReset] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
 
@@ -96,8 +98,10 @@ const App = () => {
     useEffect(() => {
         const handleClick = (event) => {
             if (!event.target.closest(".action")) {
-                // Ensure the click is not on interactive elements
-                if (guessQueue.length > 0 && isProcessingGuess) {
+                // If there's a confirmation reset active and the click is outside the button, reset it
+                if (confirmReset) {
+                    setConfirmReset(false);
+                } else if (guessQueue.length > 0 && isProcessingGuess) {
                     if (typeof guessQueue[0] === "object") {
                         setCurrentGuess(guessQueue[0].guess.toUpperCase());
                         setExplanation(guessQueue[0].explanation);
@@ -108,14 +112,14 @@ const App = () => {
                     }
                 } else if (isProcessingGuess) {
                     endTurn();
-                    setClickToAdvance(false); // reset clickToAdvance when queue is empty
+                    setClickToAdvance(false);
                 }
             }
         };
 
         document.addEventListener("click", handleClick);
         return () => document.removeEventListener("click", handleClick);
-    }, [guessQueue, isProcessingGuess]);
+    }, [confirmReset, guessQueue, isProcessingGuess]);
 
     // process each guess in the guessQueue
     const processGuess = (guess) => {
@@ -265,16 +269,26 @@ const App = () => {
         }
     };
 
+    const handleResetClick = (event) => {
+        event.stopPropagation();
+        if (confirmReset) {
+            resetGame();
+        } else {
+            setConfirmReset(true);
+        }
+    };
+
     // reset game when user clicks restart
     const resetGame = () => {
         fetchWords();
-        setShowRoleSelection(true);
+        // setShowRoleSelection(true);
         setGameOver(false);
         setGameResult("");
         setCurrentTurn("user");
-        setShowClueInput(false);
+        setShowClueInput(true);
         setGameMessage("");
         setClickToAdvance(false);
+        setConfirmReset(false); // Reset the confirmation state
     };
 
     const currentGuessTeam = (currentGuess) => {
@@ -325,12 +339,22 @@ const App = () => {
                 )}
             </div>
             <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
-                <Switch
-                    label={"Include guess explanation"}
+                {/* <Switch
+                    label={"Explain guesses"}
                     enabled={useExplanation}
                     toggle={toggleUseExplanation}
-                />
+                /> */}
                 <ModelSelector model={model} setModel={setModel} />
+                <button
+                    className={`rounded-lg px-4 py-2 ${
+                        confirmReset
+                            ? "bg-red-600 text-white"
+                            : "bg-gray-600 text-white"
+                    }`}
+                    onClick={handleResetClick}
+                >
+                    {confirmReset ? "You sure?" : "Reset Game"}
+                </button>
             </div>
         </div>
     );
