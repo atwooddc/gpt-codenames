@@ -1,15 +1,19 @@
-import { React } from "react";
+import React from "react";
+import "./Card.css";
 
-const Card = ({ wordObj }) => {
+const Card = ({ wordObj, onHover, onHoverEnd, isHovered }) => {
     const getBackgroundColor = () => {
         if (wordObj.isGuessed) {
             switch (wordObj.team) {
                 case "user":
                     return "#17739e";
+                    // return "#458fb1"; // lighter hue
                 case "computer":
                     return "#d81c2c";
+                    // return "#e04956"; // lighter hue
                 case "bystander":
                     return "#aeae99";
+                    // return "#bebead"; // lighter hue
                 default:
                     return "darkgrey";
             }
@@ -35,24 +39,21 @@ const Card = ({ wordObj }) => {
 
     return (
         <div
-            className={`flex items-center justify-center font-mono 
+            onMouseEnter={() => onHover(wordObj.team)}
+            onMouseLeave={onHoverEnd}
+            className={`card flex items-center justify-center font-mono 
                   tracking-wider text-black uppercase 
                   rounded shadow-md transition-transform
-                  ${!wordObj.isGuessed ? "hover:scale-105" : ""}
-                  ${wordObj.isGuessed ? "text-black/30" : ""}`}
+                  ${wordObj.isGuessed ? "text-black/30" : ""}
+                  ${isHovered ? "shimmer scale-105" : ""}`}
             style={{
                 aspectRatio: "67 / 43",
                 backgroundColor: getBackgroundColor(),
                 borderColor: getBorderColor(),
                 borderWidth: `${wordObj.isGuessed ? "0px" : "3px"}`,
                 borderRadius: "4px",
-                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 textAlign: "center",
                 fontSize: "clamp(0.5rem, 1.5vw, 0.85rem)",
-                // fontWeight: "bold",
                 textTransform: "uppercase",
             }}
         >

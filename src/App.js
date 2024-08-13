@@ -6,7 +6,7 @@ import GameOverPopUp from "./components/GameOverPopUp";
 import ClueInput from "./components/ClueInput";
 import ModelSelector from "./components/ModelSelector";
 import GameMessage from "./components/GameMessage";
-import Switch from "./components/Switch";
+import Legend from "./components/Legend";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
@@ -21,7 +21,6 @@ const App = () => {
 
     const [model, setModel] = useState("gpt-4o");
     const [explanation, setExplanation] = useState("");
-    const [useExplanation, setUseExplanation] = useState(true);
 
     const [currentGuess, setCurrentGuess] = useState("");
     const [guessQueue, setGuessQueue] = useState([]);
@@ -34,6 +33,16 @@ const App = () => {
     const [confirmReset, setConfirmReset] = useState(false);
     const [gameOver, setGameOver] = useState(false);
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
+
+    const [hoveredTeam, setHoveredTeam] = useState(null);
+
+    const handleCardHover = (team) => {
+        setHoveredTeam(team);
+    };
+
+    const handleCardHoverEnd = () => {
+        setHoveredTeam(null);
+    };
 
     const fetchWords = async () => {
         const gameWords = await loadWords();
@@ -83,7 +92,7 @@ const App = () => {
 
         const data = await fetchAPI(
             `http://localhost:3001/gpt-field-operative?model=${model}&explanation=${
-                useExplanation ? 1 : 0
+                true ? 1 : 0
             }`,
             "POST",
             body
@@ -298,16 +307,24 @@ const App = () => {
         return wordObj ? wordObj.team : null;
     };
 
-    const toggleUseExplanation = () => setUseExplanation(!useExplanation);
-
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
             <div
                 className="grid-container flex justify-center items-center w-full"
                 style={{ maxWidth: "45vw" }}
             >
-                {words.length > 0 ? <Grid words={words} /> : <p>Loading...</p>}
+                {words.length > 0 ? (
+                    <Grid
+                        words={words}
+                        onCardHover={handleCardHover}
+                        onCardHoverEnd={handleCardHoverEnd}
+                        hoveredTeam={hoveredTeam}
+                    />
+                ) : (
+                    <p>Loading...</p>
+                )}
             </div>
+            <Legend setHoveredTeam={setHoveredTeam} />
             <div className="interaction-box flex flex-col items-center justify-center w-full mt-8">
                 <GameMessage
                     gameMessage={gameMessage}
@@ -339,11 +356,6 @@ const App = () => {
                 )}
             </div>
             <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
-                {/* <Switch
-                    label={"Explain guesses"}
-                    enabled={useExplanation}
-                    toggle={toggleUseExplanation}
-                /> */}
                 <ModelSelector model={model} setModel={setModel} />
                 <button
                     className={`rounded-lg px-4 py-2 ${

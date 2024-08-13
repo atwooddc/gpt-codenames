@@ -1,9 +1,8 @@
-import { React, useState } from "react";
+import React from "react";
 import { GrCircleQuestion } from "react-icons/gr";
 import "./GameMessage.css";
 
 const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
-    const [questionHover, setQuestionHover] = useState(false);
 
     const getBorderColor = () => {
         switch (guessTeam) {
