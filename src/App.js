@@ -310,6 +310,29 @@ const App = () => {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
             <div
+                className="relative w-full max-w-4xl" // Parent container with relative positioning
+            >
+                <div
+                    className="grid-container flex justify-center items-center w-full"
+                    style={{ maxWidth: "45vw" }}
+                >
+                    {words.length > 0 ? (
+                        <Grid
+                            words={words}
+                            onCardHover={handleCardHover}
+                            onCardHoverEnd={handleCardHoverEnd}
+                            hoveredTeam={hoveredTeam}
+                        />
+                    ) : (
+                        <p>Loading...</p>
+                    )}
+                </div>
+
+                <div className="absolute bottom-0 right-0 mb-2 ml-1">
+                    <Legend setHoveredTeam={setHoveredTeam} />
+                </div>
+            </div>
+            {/* <div
                 className="grid-container flex justify-center items-center w-full"
                 style={{ maxWidth: "45vw" }}
             >
@@ -323,8 +346,11 @@ const App = () => {
                 ) : (
                     <p>Loading...</p>
                 )}
-            </div>
-            <Legend setHoveredTeam={setHoveredTeam} />
+                <div className="absolute bottom-0 right-0 mb-2 ml-2">
+                    <Legend setHoveredTeam={setHoveredTeam} />
+                </div>
+            </div> */}
+
             <div className="interaction-box flex flex-col items-center justify-center w-full mt-8">
                 <GameMessage
                     gameMessage={gameMessage}
