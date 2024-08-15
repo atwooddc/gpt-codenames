@@ -38,11 +38,11 @@ app.post("/gpt-field-operative", async (req, res) => {
 
         if (explanation != 0) {
             systemContent = `
-                    Role: Codenames guesser.
-                    Input: stringified JSON {clue, number, unguessedWords}.
-                    Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, each with a one sentence explanation of how they relate to 'clue' [{guess: "Guess1", explanation: "Explanation1"}, {guess: "Guess2", explanation: "Explanation2"}, ...], sorted by confidence.
-                    Ensure selected words are from 'words'. Return nothing else besides the array.
-                    `;
+                Role: Codenames guesser.
+                Input: stringified JSON {clue, number, unguessedWords}.
+                Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, each with a one-sentence explanation of how they relate to 'clue' [{ "guess": "Guess1", "explanation": "Explanation1" }, { "guess": "Guess2", "explanation": "Explanation2" }, ...], sorted by confidence.
+                Ensure all JSON keys are enclosed in double quotes and selected words are from 'words'. Return nothing else besides the array.
+                `;
         }
 
         console.log(systemContent);
@@ -69,9 +69,14 @@ app.post("/gpt-field-operative", async (req, res) => {
         const rawContent = response.choices[0].message.content;
         console.log("Raw Content:", rawContent);
 
-        const guesses = JSON.parse(rawContent);
-        // const guesses = JSON.parse(rawContent).map((guess) => guess.trim());
+        try {
+            guesses = JSON.parse(rawContent);
+        } catch (jsonParseError) {
+            console.warn("JSON parse failed, attempting to fix:", jsonParseError);
 
+            const fixedContent = rawContent.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+            guesses = JSON.parse(fixedContent);
+        }
 
         res.json({ guesses });
     } catch (error) {
@@ -97,7 +102,7 @@ app.post("/gpt-spymaster", async (req, res) => {
         let systemContent = `
                     Role: Acts as the spymaster for Codenames, generating clues.
                     Input: Receives a JSON object {teamWords, otherTeamWords, bystanders, assassin} with words from different categories.
-                    Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassin'.
+                    Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassin'. The clue may not be a form of any of the words provided. 
                     Output: Returns ONLY an array with the clue and the number of target words: ["clue", "number"]. Example: ["water", "1"]. Again, ONLY return an array.
                     `;
 
