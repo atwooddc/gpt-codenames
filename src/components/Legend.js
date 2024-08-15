@@ -9,17 +9,17 @@ const Legend = ({ setHoveredTeam }) => {
     ];
 
     return (
-        <div className="flex space-x-4 mt-4">
+        <div className="flex flex-col space-y-2">
             {teams.map(({ color, label, team }) => (
                 <div
                     key={team}
-                    className="flex items-center space-x-2 cursor-default"
+                    className="flex items-center space-x-1 cursor-default"
                     onMouseEnter={() => setHoveredTeam(team)}
                     onMouseLeave={() => setHoveredTeam(null)}
                 >
                     <div
                         style={{ backgroundColor: color }}
-                        className="w-4 h-4 rounded"
+                        className="w-3 h-3 rounded"
                     ></div>
                     <span className= "text-gray-500 text-sm">{label}</span>
                 </div>

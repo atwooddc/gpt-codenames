@@ -59,7 +59,7 @@ const ModelSelector = ({ model, setModel }) => {
                         }}
                         style={{ position: 'relative' }}
                     >
-                        {m.replace("gpt-", "")}
+                        {m == "gpt-3.5-turbo" ? m.substring(4,7) : m.substring(4)}
                     </button>
                 ))}
             </div>

@@ -43,7 +43,7 @@ const Card = ({ wordObj, onHover, onHoverEnd, isHovered }) => {
             onMouseLeave={onHoverEnd}
             className={`card flex items-center justify-center font-mono 
                   tracking-wider text-black uppercase 
-                  rounded shadow-md transition-transform
+                  rounded shadow-md transition-transform cursor-default
                   ${wordObj.isGuessed ? "text-black/30" : ""}
                   ${isHovered ? "shimmer scale-105" : ""}`}
             style={{

@@ -310,7 +310,7 @@ const App = () => {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
             <div
-                className="grid-container flex justify-center items-center w-full"
+                className="relative grid-container flex justify-center items-center w-full"
                 style={{ maxWidth: "45vw" }}
             >
                 {words.length > 0 ? (
@@ -323,8 +323,10 @@ const App = () => {
                 ) : (
                     <p>Loading...</p>
                 )}
+                <div className="absolute right-0 bottom-0 transform translate-x-full -mr-4">
+                    <Legend setHoveredTeam={setHoveredTeam} />
+                </div>
             </div>
-            <Legend setHoveredTeam={setHoveredTeam} />
             <div className="interaction-box flex flex-col items-center justify-center w-full mt-8">
                 <GameMessage
                     gameMessage={gameMessage}
