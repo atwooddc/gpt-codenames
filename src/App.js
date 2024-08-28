@@ -77,7 +77,6 @@ const App = () => {
             )}', ${number}. Your GPTeammate is thinking...`
         );
         await getGuesses(clue, number);
-        setClickToAdvance(true);
     };
 
     // get guesses from GPT API
@@ -100,11 +99,20 @@ const App = () => {
                 "POST",
                 body
             );
-            console.log(data.guesses);
 
-            setGuessQueue(data.guesses);
-            setIsProcessingGuess(true);
-            setClickToAdvance(true);
+            if (data.rateLimitError) {
+                setShowClueInput(false);
+                setGameMessage(
+                    "Hourly API limit reached. Reset the game and try again soon!"
+                );
+                setClickToAdvance(false);
+            } else {
+                console.log(data.guesses);
+
+                setGuessQueue(data.guesses);
+                setIsProcessingGuess(true);
+                setClickToAdvance(true);
+            }
         } catch {
             setError(
                 "Sorry, we're having trouble communicating with the GPT. Please restart the game"
@@ -239,9 +247,16 @@ const App = () => {
                 body
             );
 
-            const clue = data.clue;
-            const number = Number(data.number);
-            return [clue, number];
+            if (data.rateLimitError) {
+                setGameMessage(
+                    "Hourly API limit reached. Reset the game and try again soon!"
+                );
+                setClickToAdvance(false);
+            } else {
+                const clue = data.clue;
+                const number = Number(data.number);
+                return [clue, number];
+            }
         } catch (error) {
             console.error("Error in fetching GPT clue:", error);
             setError(

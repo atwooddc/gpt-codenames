@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { OpenAI } = require("openai");
-const rateLimit = require('express-rate-limit');
+const rateLimit = require("express-rate-limit");
 
 require("dotenv").config();
 
@@ -9,15 +9,14 @@ const app = express();
 const port = 3001;
 
 const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    message: "Too many requests from this IP, please try again later."
+    windowMs: 60 * 60 * 1000, // 60 minutes
+    max: 150, // requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
 });
 
-app.use(apiLimiter);
 app.use(cors());
 app.use(express.json());
-
+app.use(apiLimiter);
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -80,9 +79,15 @@ app.post("/gpt-field-operative", async (req, res) => {
         try {
             guesses = JSON.parse(rawContent);
         } catch (jsonParseError) {
-            console.warn("JSON parse failed, attempting to fix:", jsonParseError);
+            console.warn(
+                "JSON parse failed, attempting to fix:",
+                jsonParseError
+            );
 
-            const fixedContent = rawContent.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+            const fixedContent = rawContent.replace(
+                /([{,]\s*)(\w+)(\s*:)/g,
+                '$1"$2"$3'
+            );
             guesses = JSON.parse(fixedContent);
         }
 
