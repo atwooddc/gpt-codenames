@@ -82,26 +82,34 @@ const App = () => {
 
     // get guesses from GPT API
     const getGuesses = async (clue, number) => {
-        const unguessedWordObjs = words.filter((word) => !word.isGuessed);
-        const unguessedWords = unguessedWordObjs.map((wordObj) => wordObj.word);
-        const body = {
-            clue,
-            number,
-            unguessedWords,
-        };
+        try {
+            const unguessedWordObjs = words.filter((word) => !word.isGuessed);
+            const unguessedWords = unguessedWordObjs.map(
+                (wordObj) => wordObj.word
+            );
+            const body = {
+                clue,
+                number,
+                unguessedWords,
+            };
 
-        const data = await fetchAPI(
-            `http://localhost:3001/gpt-field-operative?model=${model}&explanation=${
-                true ? 1 : 0
-            }`,
-            "POST",
-            body
-        );
-        console.log(data.guesses);
+            const data = await fetchAPI(
+                `http://localhost:3001/gpt-field-operative?model=${model}&explanation=${
+                    true ? 1 : 0
+                }`,
+                "POST",
+                body
+            );
+            console.log(data.guesses);
 
-        setGuessQueue(data.guesses);
-        setIsProcessingGuess(true);
-        setClickToAdvance(true);
+            setGuessQueue(data.guesses);
+            setIsProcessingGuess(true);
+            setClickToAdvance(true);
+        } catch {
+            setError(
+                "Sorry, we're having trouble communicating with the GPT. Please restart the game"
+            );
+        }
     };
 
     useEffect(() => {
@@ -236,7 +244,9 @@ const App = () => {
             return [clue, number];
         } catch (error) {
             console.error("Error in fetching GPT clue:", error);
-            setError(`Error fetching clue: ${error}`);
+            setError(
+                "Sorry, we're having trouble communicating with the GPT. Please restart the game"
+            );
         }
     };
 
@@ -296,6 +306,7 @@ const App = () => {
         setCurrentTurn("user");
         setShowClueInput(true);
         setGameMessage("");
+        setError("");
         setClickToAdvance(false);
         setConfirmReset(false); // Reset the confirmation state
     };

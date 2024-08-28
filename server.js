@@ -1,13 +1,23 @@
 const express = require("express");
 const cors = require("cors");
 const { OpenAI } = require("openai");
+const rateLimit = require('express-rate-limit');
+
 require("dotenv").config();
 
 const app = express();
 const port = 3001;
 
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    message: "Too many requests from this IP, please try again later."
+});
+
+app.use(apiLimiter);
 app.use(cors());
 app.use(express.json());
+
 
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -44,8 +54,6 @@ app.post("/gpt-field-operative", async (req, res) => {
                 Ensure all JSON keys are enclosed in double quotes and selected words are from 'words'. Return nothing else besides the array.
                 `;
         }
-
-        console.log(systemContent);
 
         const response = await openai.chat.completions.create({
             model: model,

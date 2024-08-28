@@ -18,7 +18,7 @@ const ClueInput = ({ onSubmitClue, show, words }) => {
     };
 
     const handleSubmit = () => {
-        if (!hasSpace && !isInvalidWord && clue.trim() !== "") {
+        if (!hasSpace && !isInvalidWord && clue.trim() !== "" && clue.length < 46) {
             onSubmitClue(clue, numCards);
             setClue("");
             setNumCards(1);
