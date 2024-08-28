@@ -9,8 +9,8 @@ const app = express();
 const port = 3001;
 
 const apiLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 60 minutes
-    max: 150, // requests per windowMs
+    windowMs: 6 * 60 * 60 * 1000, // 6 hours
+    max: 200, // requests per windowMs
     message: "Too many requests from this IP, please try again later.",
 });
 
