@@ -99,6 +99,7 @@ const App = () => {
         // Update turnData with the user clue and intended guesses
         setTurnData((prevTurnData) => ({
             ...prevTurnData,
+            spymaster: "human",
             clue: clue,
             number: number,
             cluedWords: selectedCards,
@@ -253,6 +254,7 @@ const App = () => {
         const [clue, number] = await getGPTClue();
         setTurnData((prevTurnData) => ({
             ...prevTurnData,
+            spymaster: model,
             clue: clue,
             number: number,
             cluedWords: [], // Placeholder for GPT clued words
