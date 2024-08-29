@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
-const ClueInput = ({ onSubmitClue, show, words }) => {
+const ClueInput = ({ onSubmitClue, show, words, numCodenamesClued }) => {
     const [clue, setClue] = useState("");
-    const [numCards, setNumCards] = useState(1);
+    // const [numCards, setNumCards] = useState(1);
     const [hasSpace, setHasSpace] = useState(false);
     const [isInvalidWord, setIsInvalidWord] = useState(false);
 
@@ -13,22 +13,24 @@ const ClueInput = ({ onSubmitClue, show, words }) => {
         setIsInvalidWord(words.includes(value.toUpperCase()));
     };
 
-    const handleNumCardsChange = (e) => {
-        setNumCards(e.target.value);
-    };
+    // const handleNumCardsChange = (e) => {
+    //     setNumCards(e.target.value);
+    // };
 
     const handleSubmit = () => {
-        if (!hasSpace && !isInvalidWord && clue.trim() !== "" && clue.length < 46) {
-            onSubmitClue(clue, numCards);
-            setClue("");
-            setNumCards(1);
-            setHasSpace(false);
-            setIsInvalidWord(false);
-        }
+        onSubmitClue(clue, numCodenamesClued);
+        setClue("");
+        // setNumCards(1);
+        setHasSpace(false);
+        setIsInvalidWord(false);
     };
 
     return (
-        <div className={`flex flex-col space-y-4 ${show ? "" : "invisible"}`}>
+        <div
+            className={`flex flex-col space-y-4 items-center ${
+                show ? "" : "invisible"
+            }`}
+        >
             <div className="flex items-center space-x-4 h-8">
                 <input
                     type="text"
@@ -39,29 +41,41 @@ const ClueInput = ({ onSubmitClue, show, words }) => {
                             ? "border-red-500"
                             : "border-gray-300"
                     }`}
-                    placeholder="Enter one-word clue"
+                    placeholder="One-word clue"
                 />
-                <input
+                {/* <input
                     type="number"
                     value={numCards}
                     onChange={handleNumCardsChange}
                     min="1"
                     max="9"
                     className="border-4 p-2 rounded border-gray-300"
-                />
+                /> */}
                 <button
                     onClick={handleSubmit}
-                    className="px-4 py-2 bg-blue-600 text-white rounded"
-                    disabled={hasSpace || isInvalidWord || clue.trim() === ""}
+                    className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+                    disabled={
+                        numCodenamesClued === 0 ||
+                        hasSpace ||
+                        clue.trim() === "" ||
+                        clue.length > 46 ||
+                        isInvalidWord
+                    }
                 >
                     Submit
                 </button>
             </div>
-            {/* {isInvalidWord && (
-                <p className="text-red-500">
-                    Clue cannot be one of the game words!
+            {
+                <p className="text-gray-500 italic">
+                    {clue
+                        ? numCodenamesClued
+                            ? `clueing ${numCodenamesClued} codename${
+                                  numCodenamesClued === 1 ? "" : "s"
+                              }`
+                            : "Select codenames you are clueing."
+                        : "Enter clue"}
                 </p>
-            )} */}
+            }
         </div>
     );
 };

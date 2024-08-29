@@ -21,7 +21,7 @@ const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
         if (currentGuess && gameMessage.includes(currentGuess)) {
             const parts = gameMessage.split(currentGuess);
             return (
-                <span className="flex items-center">
+                <div className="flex items-center">
                     {parts[0]}
                     <span
                         className={`hover-tooltip font-mono mx-1 tracking-wider text-black relative group flex items-center`}
@@ -49,7 +49,7 @@ const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
                         </span>
                     </span>
                     {parts[1]}
-                </span>
+                </div>
             );
         } else {
             return gameMessage;
@@ -59,7 +59,7 @@ const GameMessage = ({ gameMessage, currentGuess, guessTeam, explanation }) => {
     return (
         <>
             {gameMessage && (
-                <p className="text-lg h-8">{interactiveMessage()}</p>
+                <div className="text-lg h-8">{interactiveMessage()}</div>
             )}
         </>
     );

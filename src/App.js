@@ -22,6 +22,7 @@ const App = () => {
     const [model, setModel] = useState("gpt-4o");
     const [explanation, setExplanation] = useState("");
 
+    const [numCodenamesClued, setNumCodenamesClued] = useState(0);
     const [currentGuess, setCurrentGuess] = useState("");
     const [guessQueue, setGuessQueue] = useState([]);
     const [isProcessingGuess, setIsProcessingGuess] = useState(false);
@@ -35,6 +36,9 @@ const App = () => {
     const [gameResult, setGameResult] = useState(""); // 'win' or 'lose'
 
     const [hoveredTeam, setHoveredTeam] = useState(null);
+    const [selectedCards, setSelectedCards] = useState([]);
+
+    const [turnData, setTurnData] = useState([]);
 
     const handleCardHover = (team) => {
         setHoveredTeam(team);
@@ -43,6 +47,27 @@ const App = () => {
     const handleCardHoverEnd = () => {
         setHoveredTeam(null);
     };
+
+    const handleCardClick = (wordObj) => {
+        if (
+            currentTurn === "user" &&
+            showClueInput &&
+            wordObj.team === "user" &&
+            !wordObj.isGuessed
+        ) {
+            setSelectedCards((prevSelected) => {
+                if (prevSelected.includes(wordObj.word)) {
+                    return prevSelected.filter((word) => word !== wordObj.word);
+                } else {
+                    return [...prevSelected, wordObj.word];
+                }
+            });
+        }
+    };
+
+    useEffect(() => {
+        setNumCodenamesClued(selectedCards.length);
+    }, [selectedCards]);
 
     const fetchWords = async () => {
         const gameWords = await loadWords();
@@ -70,6 +95,15 @@ const App = () => {
     const handleClueSubmit = async (clue, number) => {
         console.log("User turn");
         console.log(clue, ",", number);
+
+        // Update turnData with the user clue and intended guesses
+        setTurnData((prevTurnData) => ({
+            ...prevTurnData,
+            clue: clue,
+            number: number,
+            cluedWords: selectedCards,
+        }));
+
         setShowClueInput(false);
         setGameMessage(
             `Your clue is '${toTitleCase(
@@ -159,6 +193,12 @@ const App = () => {
                     `Guess ${guess.toUpperCase()} was the assassin. Game over!`
                 );
                 setIsProcessingGuess(false);
+                setTurnData((prevTurnData) => ({
+                    ...prevTurnData,
+                    incorrectGuess: guess,
+                    assassin: true,
+                }));
+                endTurn();
             } else if (words[wordIndex].team !== currentTurn) {
                 setWords((prevWords) =>
                     prevWords.map((word, idx) =>
@@ -172,6 +212,10 @@ const App = () => {
                             : "a bystander"
                     }. End of turn.`
                 );
+                setTurnData((prevTurnData) => ({
+                    ...prevTurnData,
+                    incorrectGuess: guess,
+                }));
                 setGuessQueue([]);
             } else {
                 setWords((prevWords) =>
@@ -180,6 +224,13 @@ const App = () => {
                     )
                 );
                 setGameMessage(`Guess ${guess.toUpperCase()} is correct.`);
+                setTurnData((prevTurnData) => ({
+                    ...prevTurnData,
+                    correctGuesses: [
+                        ...(prevTurnData.correctGuesses || []),
+                        guess,
+                    ],
+                }));
                 setGuessQueue((prevQueue) => prevQueue.slice(1));
             }
         } else {
@@ -200,6 +251,12 @@ const App = () => {
         setClickToAdvance(false);
         console.log("GPT turn");
         const [clue, number] = await getGPTClue();
+        setTurnData((prevTurnData) => ({
+            ...prevTurnData,
+            clue: clue,
+            number: number,
+            cluedWords: [], // Placeholder for GPT clued words
+        }));
         console.log(clue, ",", number);
         setGameMessage(
             `The GPT spymaster's clue is '${toTitleCase(clue)}', ${number}.`
@@ -267,8 +324,15 @@ const App = () => {
 
     // end turn and switch to next turn
     const endTurn = () => {
+        console.log("TURN DATA", turnData);
+
+        // Placeholder for posting to a Firebase database
+        // postTurnDataToFirebase(turnDataEntry);
+
         setIsProcessingGuess(false);
         setGuessQueue([]);
+        setSelectedCards([]);
+        setTurnData([]);
 
         const userWordsGuessed = words.filter(
             (word) => word.team === "user" && word.isGuessed
@@ -324,6 +388,7 @@ const App = () => {
         setError("");
         setClickToAdvance(false);
         setConfirmReset(false); // Reset the confirmation state
+        setSelectedCards([]); // Clear selected cards
     };
 
     const currentGuessTeam = (currentGuess) => {
@@ -342,9 +407,12 @@ const App = () => {
                 {words.length > 0 ? (
                     <Grid
                         words={words}
+                        clueInput={showClueInput}
                         onCardHover={handleCardHover}
                         onCardHoverEnd={handleCardHoverEnd}
                         hoveredTeam={hoveredTeam}
+                        onCardClick={handleCardClick}
+                        selectedCards={selectedCards}
                     />
                 ) : (
                     <p>Loading...</p>
@@ -367,6 +435,7 @@ const App = () => {
                             onSubmitClue={handleClueSubmit}
                             show={true}
                             words={words.map((word) => word.word.toUpperCase())}
+                            numCodenamesClued={numCodenamesClued}
                         />
                     )}
                 {clickToAdvance && (
@@ -384,7 +453,7 @@ const App = () => {
                 )}
             </div>
             <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
-                <ModelSelector model={model} setModel={setModel} />
+                {/* <ModelSelector model={model} setModel={setModel} /> */}
                 <button
                     className={`rounded-lg px-4 py-2 ${
                         confirmReset
