@@ -113,11 +113,11 @@ app.post("/gpt-spymaster", async (req, res) => {
         };
 
         let systemContent = `
-                    Role: Acts as the spymaster for Codenames, generating clues.
-                    Input: Receives a JSON object {teamWords, otherTeamWords, bystanders, assassin} with words from different categories.
-                    Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassin'. The clue may not be a form of any of the words provided. 
-                    Output: Returns ONLY an array with the clue and the number of target words: ["clue", "number"]. Example: ["water", "1"]. Again, ONLY return an array.
-                    `;
+            Role: Acts as the spymaster for Codenames, generating clues.
+            Input: Receives a JSON object {teamWords, otherTeamWords, bystanderWords, assassinWord} with words from different categories.
+            Task: Generate a one-word clue targeting the maximum possible words from 'teamWords' while avoiding any association with 'otherTeamWords', 'bystanderWords', and especially 'assassinWord'. The clue may not be a form of any of the words provided. 
+            Output: Return ONLY an array with the clue, the number of target words, and an array of words from 'teamWords' that the clue relates to. Example: ["water", "2", ["ocean", "river"]]. Ensure the array of related words is exactly of length 'number', and again, return ONLY the array.
+        `;
 
         const response = await openai.chat.completions.create({
             model: model,
@@ -138,9 +138,22 @@ app.post("/gpt-spymaster", async (req, res) => {
             return;
         }
 
-        const [clue, number] = JSON.parse(response.choices[0].message.content);
+        const [clue, number, cluedWords] = JSON.parse(
+            response.choices[0].message.content
+        );
 
-        res.json({ clue, number });
+        // Ensure relatedWords is an array and has the correct length
+        if (
+            !Array.isArray(cluedWords) ||
+            cluedWords.length !== Number(number)
+        ) {
+            res.status(500).json({
+                error: "Invalid response format from OpenAI: clued words are invalid",
+            });
+            return;
+        }
+
+        res.json({ clue, number, cluedWords });
     } catch (error) {
         console.error("Error communicating with OpenAI:", error);
         res.status(500).json({ error: "Error communicating with OpenAI" });

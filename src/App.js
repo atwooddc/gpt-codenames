@@ -251,13 +251,13 @@ const App = () => {
     const simulateGPTTurn = async () => {
         setClickToAdvance(false);
         console.log("GPT turn");
-        const [clue, number] = await getGPTClue();
+        const [clue, number, cluedWords] = await getGPTClue();
         setTurnData((prevTurnData) => ({
             ...prevTurnData,
             spymaster: model,
             clue: clue,
             number: number,
-            cluedWords: [], // Placeholder for GPT clued words
+            cluedWords: cluedWords, // Placeholder for GPT clued words
         }));
         console.log(clue, ",", number);
         setGameMessage(
@@ -314,7 +314,8 @@ const App = () => {
             } else {
                 const clue = data.clue;
                 const number = Number(data.number);
-                return [clue, number];
+                const cluedWords = data.cluedWords;
+                return [clue, number, cluedWords];
             }
         } catch (error) {
             console.error("Error in fetching GPT clue:", error);
