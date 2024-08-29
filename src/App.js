@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { nanoid } from "nanoid";
 import Grid from "./components/Grid";
 import IntroPopUp from "./components/IntroPopUp";
 import RoleSelectionPopUp from "./components/RoleSelectionPopUp";
@@ -10,12 +11,15 @@ import Legend from "./components/Legend";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
+import { uploadTurnData } from "./utils/uploadTurnData";
 
 const App = () => {
     const [words, setWords] = useState([]);
     const [showIntro, setShowIntro] = useState(true);
     const [showRoleSelection, setShowRoleSelection] = useState(false);
     const [showClueInput, setShowClueInput] = useState(false);
+
+    const [gameID, setGameID] = useState();
 
     const [error, setError] = useState(null);
 
@@ -77,6 +81,9 @@ const App = () => {
     // load words on first render
     useEffect(() => {
         fetchWords();
+        const gameId = nanoid(8);
+        console.log("Generated Game ID:", gameId);
+        setGameID(gameId);
     }, []);
 
     // show game instructions pop up
@@ -103,6 +110,7 @@ const App = () => {
             clue: clue,
             number: number,
             cluedWords: selectedCards,
+            gameID: gameID,
         }));
 
         setShowClueInput(false);
@@ -257,7 +265,8 @@ const App = () => {
             spymaster: model,
             clue: clue,
             number: number,
-            cluedWords: cluedWords, // Placeholder for GPT clued words
+            cluedWords: cluedWords,
+            gameID: gameID,
         }));
         console.log(clue, ",", number);
         setGameMessage(
@@ -329,13 +338,13 @@ const App = () => {
     const endTurn = () => {
         console.log("TURN DATA", turnData);
 
-        // Placeholder for posting to a Firebase database
-        // postTurnDataToFirebase(turnDataEntry);
+        // Post to a Firebase database
+        uploadTurnData(turnData);
 
+        setTurnData([]);
         setIsProcessingGuess(false);
         setGuessQueue([]);
         setSelectedCards([]);
-        setTurnData([]);
 
         const userWordsGuessed = words.filter(
             (word) => word.team === "user" && word.isGuessed
@@ -392,6 +401,9 @@ const App = () => {
         setClickToAdvance(false);
         setConfirmReset(false); // Reset the confirmation state
         setSelectedCards([]); // Clear selected cards
+        const gameId = nanoid(8);
+        console.log("Generated Game ID:", gameId);
+        setGameID(gameId);
     };
 
     const currentGuessTeam = (currentGuess) => {
