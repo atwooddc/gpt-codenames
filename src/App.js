@@ -339,7 +339,11 @@ const App = () => {
         console.log("TURN DATA", turnData);
 
         // Post to a Firebase database
-        uploadTurnData(turnData);
+        try {
+            uploadTurnData(turnData);
+        } catch {
+            console.log("Error: Firebase turn data upload failed. ");
+        }
 
         setTurnData([]);
         setIsProcessingGuess(false);
