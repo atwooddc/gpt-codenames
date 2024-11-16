@@ -49,7 +49,7 @@ app.post("/gpt-field-operative", async (req, res) => {
             systemContent = `
                 Role: Codenames guesser.
                 Input: stringified JSON {clue, number, unguessedWords}.
-                Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, each with a one-sentence explanation of how they relate to 'clue' [{ "guess": "Guess1", "explanation": "Explanation1" }, { "guess": "Guess2", "explanation": "Explanation2" }, ...], sorted by confidence.
+                Output: ONLY an array of length 'number' containing most relevant words from 'unguessedWords' array, each with a one-sentence explanation of how they relate to 'clue' [{ "guess": "Guess1", "explanation": "Explanation1" }, { "guess": "Guess2", "explanation": "Explanation2" }, ...], sorted by confidence. No need for enclosing backticks.
                 Ensure all JSON keys are enclosed in double quotes and selected words are from 'words'. Return nothing else besides the array.
                 `;
         }
@@ -84,10 +84,11 @@ app.post("/gpt-field-operative", async (req, res) => {
                 jsonParseError
             );
 
-            const fixedContent = rawContent.replace(
-                /([{,]\s*)(\w+)(\s*:)/g,
-                '$1"$2"$3'
-            );
+            const fixedContent = rawContent
+                .replace(/^```json\s*/, "") // Removes ```json from the beginning
+                .replace(/```$/, "") // Removes ``` from the end
+                .replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
+
             guesses = JSON.parse(fixedContent);
         }
 

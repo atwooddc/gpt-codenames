@@ -58,7 +58,7 @@ const ClueInput = ({ onSubmitClue, show, words, numCodenamesClued }) => {
                             ? `clueing ${numCodenamesClued} codename${
                                   numCodenamesClued === 1 ? "" : "s"
                               }`
-                            : "Select codenames you are clueing."
+                            : "Select matching codenames"
                         : "Enter clue"}
                 </p>
             }

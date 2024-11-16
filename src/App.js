@@ -8,6 +8,8 @@ import ClueInput from "./components/ClueInput";
 import ModelSelector from "./components/ModelSelector";
 import GameMessage from "./components/GameMessage";
 import Legend from "./components/Legend";
+import Rules from "./components/Rules";
+import Reset from "./components/Reset";
 import { loadWords } from "./utils/loadWords";
 import { fetchAPI } from "./utils/fetchAPI";
 import { toTitleCase } from "./utils/toTitleCase";
@@ -15,9 +17,8 @@ import { uploadTurnData } from "./utils/uploadTurnData";
 
 const App = () => {
     const [words, setWords] = useState([]);
-    const [showIntro, setShowIntro] = useState(true);
-    const [showRoleSelection, setShowRoleSelection] = useState(false);
-    const [showClueInput, setShowClueInput] = useState(false);
+    const [showClueInput, setShowClueInput] = useState(true);
+    const [showRules, setShowRules] = useState(false);
 
     const [gameID, setGameID] = useState();
 
@@ -85,18 +86,6 @@ const App = () => {
         console.log("Generated Game ID:", gameId);
         setGameID(gameId);
     }, []);
-
-    // show game instructions pop up
-    const startGame = () => {
-        setShowIntro(false);
-        setShowRoleSelection(true);
-    };
-
-    // show role selection pop up
-    const selectRole = () => {
-        setShowRoleSelection(false);
-        setShowClueInput(true);
-    };
 
     // handle user clue submission
     const handleClueSubmit = async (clue, number) => {
@@ -395,7 +384,6 @@ const App = () => {
     // reset game when user clicks restart
     const resetGame = () => {
         fetchWords();
-        // setShowRoleSelection(true);
         setGameOver(false);
         setGameResult("");
         setCurrentTurn("user");
@@ -418,7 +406,8 @@ const App = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
+        <div className="min-h-screen bg-indigo-950 flex flex-col justify-center items-center">
+
             <div
                 className="relative grid-container flex justify-center items-center w-full"
                 style={{ maxWidth: "45vw" }}
@@ -436,8 +425,14 @@ const App = () => {
                 ) : (
                     <p>Loading...</p>
                 )}
-                <div className="absolute right-0 bottom-0 transform translate-x-full -mr-4">
+                <div className="absolute right-0 bottom-0 transform translate-x-full -mr-4 space-y-3">
                     <Legend setHoveredTeam={setHoveredTeam} />
+                    {/* <ModelSelector model={model} setModel={setModel} /> */}
+                    <Reset
+                        handleResetClick={handleResetClick}
+                        confirmReset={confirmReset}
+                    />
+                    <Rules showRules={showRules} setShowRules={setShowRules} />
                 </div>
             </div>
             <div className="interaction-box flex flex-col items-center justify-center w-full mt-8">
@@ -463,26 +458,9 @@ const App = () => {
                     </p>
                 )}
                 {error && <div className="text-red-500">{error}</div>}
-                {showIntro && <IntroPopUp onStart={startGame} />}
-                {showRoleSelection && (
-                    <RoleSelectionPopUp onSelectRole={selectRole} />
-                )}
                 {gameOver && (
                     <GameOverPopUp result={gameResult} onRestart={resetGame} />
                 )}
-            </div>
-            <div className="absolute bottom-10 right-16 flex flex-col items-end space-y-4 ">
-                {/* <ModelSelector model={model} setModel={setModel} /> */}
-                <button
-                    className={`rounded-lg px-4 py-2 ${
-                        confirmReset
-                            ? "bg-red-600 text-white"
-                            : "bg-gray-600 text-white"
-                    }`}
-                    onClick={handleResetClick}
-                >
-                    {confirmReset ? "You sure?" : "Reset Game"}
-                </button>
             </div>
         </div>
     );
