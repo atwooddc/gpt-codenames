@@ -30,6 +30,7 @@ module.exports = {
             },
             screens: {
                 "non-mobile": "520px",
+                "2xl": "1600px",
             },
         },
         fontFamily: {

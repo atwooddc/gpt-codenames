@@ -1,4 +1,3 @@
-// Word.js
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
@@ -38,7 +37,10 @@ const Word = ({
         return () => clearTimeout(timeoutId);
     }, [word.word]);
 
-    if (!initialPosition?.x || !initialPosition?.y) {
+    if (
+        typeof initialPosition?.x === "undefined" ||
+        typeof initialPosition?.y === "undefined"
+    ) {
         return null;
     }
 
@@ -72,11 +74,11 @@ const Word = ({
             whileTap={{ scale: 1.5 }}
             style={{
                 position: "absolute",
-                left: `${initialPosition.x}px`,
-                top: `${initialPosition.y}px`,
-                transformOrigin: "center",
-                display: "inline-block", // Added to ensure proper measurement
-                whiteSpace: "nowrap", // Added to keep word on one line
+                left: initialPosition.x,
+                top: initialPosition.y,
+                transformOrigin: "left",
+                display: "inline-block",
+                whiteSpace: "nowrap",
             }}
             animate={{
                 x,

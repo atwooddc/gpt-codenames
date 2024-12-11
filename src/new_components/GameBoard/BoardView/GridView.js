@@ -9,7 +9,7 @@ const GridView = () => {
     return (
         <div
             className={
-                "w-full non-mobile:w-4/5 non-mobile:justify-self-center grid grid-cols-4 gap-3 sm:gap-3 md:gap-4 lg:gap-5"
+                "w-full h-full non-mobile:justify-self-center grid grid-cols-4 auto-rows-fr gap-3 sm:gap-3 md:gap-4 lg:gap-5"
             }
         >
             {shuffleOrder.map((index) => (

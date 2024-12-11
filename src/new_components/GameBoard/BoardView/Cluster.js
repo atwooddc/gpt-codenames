@@ -23,7 +23,7 @@ const Cluster = ({ team }) => {
     const positions = clusterPositions[team] || [];
     const [initialPositions, setInitialPositions] = useState([]);
     const [wordDimensions, setWordDimensions] = useState([]);
-    const [isShuffling, setIsShuffling] = useState(false);
+    const [wordHeight, setWordHeight] = useState(0);
 
     const unguessedWords = useMemo(() => {
         const teamShuffleOrder = shuffleOrder
@@ -43,22 +43,12 @@ const Cluster = ({ team }) => {
     }, [unguessedWords.length, team, updateClusterPositions]);
 
     useEffect(() => {
-        if (unguessedWords.length > 0) {
-            updateClusterPositions(
-                team,
-                Array(unguessedWords.length).fill(null)
-            );
-        }
-    }, [unguessedWords.length, team, updateClusterPositions]);
-
-    useEffect(() => {
         setWordDimensions(
             new Array(unguessedWords.length).fill({ width: 0, height: 0 })
         );
     }, [unguessedWords.length]);
 
     const handleWordMeasure = useCallback((index, dimensions) => {
-        console.log("Word measured:", { index, dimensions });
         setWordDimensions((prev) => {
             const newDimensions = [...prev];
             newDimensions[index] = dimensions;
@@ -78,43 +68,43 @@ const Cluster = ({ team }) => {
         updateClusterPositions(team, Array(unguessedWords.length).fill(null));
     };
 
-    const getInitialPosition = useCallback((index, ref = clusterRef.current) => {
-        if (!ref) return null;
+    const getInitialPosition = useCallback(
+        (index, ref = clusterRef.current) => {
+            if (!ref || !wordHeight) return null;
 
-        const clusterRect = ref.getBoundingClientRect();
-        const clusterHeight = clusterRect.height;
+            const clusterRect = ref.getBoundingClientRect();
+            const clusterHeight = clusterRect.height;
 
-        const dimensions = wordDimensions[index] || { width: 0, height: 0 };
-        const wordHeight = dimensions.height || 20;
+            const topPadding = wordHeight / 2;
+            const bottomPadding = wordHeight / 2;
+            const leftPadding = wordHeight / 2;
+            const availableHeight = clusterHeight - topPadding - bottomPadding;
 
-        const topPadding = wordHeight / 2;
-        const bottomPadding = wordHeight / 2;
-        const leftPadding = wordHeight / 2;
-        const availableHeight = clusterHeight - topPadding - bottomPadding;
+            const rowSpacing = wordHeight * 2;
+            const columnWidth = wordHeight * 6;
 
-        const rowSpacing = wordHeight * 2;
-        const columnWidth = wordHeight * 6;
+            const rowsPerColumn = Math.floor(availableHeight / rowSpacing);
 
-        const rowsPerColumn = Math.floor(availableHeight / rowSpacing);
+            const col = Math.floor(index / rowsPerColumn);
+            const row = index % rowsPerColumn;
 
-        const col = Math.floor(index / rowsPerColumn);
-        const row = index % rowsPerColumn;
-
-        if (team === "assassin") {
+            if (team === "assassin") {
+                return {
+                    x: leftPadding,
+                    y: leftPadding,
+                };
+            }
             return {
-                x: leftPadding,
-                y: leftPadding,
+                x: leftPadding + col * columnWidth,
+                y: topPadding + row * rowSpacing,
             };
-        }
-        return {
-            x: leftPadding + col * columnWidth,
-            y: topPadding + row * rowSpacing,
-        };
-    }, [team, wordDimensions]);
+        },
+        [team, wordHeight]
+    );
 
     useEffect(() => {
-        // Calculate initial positions even without dimensions
-        if (clusterRef.current && unguessedWords.length > 0) {
+        // Calculate initial positions
+        if (clusterRef.current && unguessedWords.length > 0 && wordHeight > 0) {
             const newInitialPositions = unguessedWords.map((_, index) => {
                 const position = getInitialPosition(index);
                 return position;
@@ -122,7 +112,7 @@ const Cluster = ({ team }) => {
 
             setInitialPositions(newInitialPositions);
         }
-    }, [unguessedWords, team]);
+    }, [unguessedWords, wordHeight, getInitialPosition]);
 
     const DirectionQueue = class {
         constructor(position, stepX, stepY) {
@@ -412,12 +402,6 @@ const Cluster = ({ team }) => {
                 );
 
                 if (checkCollision(currentRect, otherRect)) {
-                    console.log("Collision detected:", {
-                        currentRect,
-                        otherRect,
-                        currentIndex: index,
-                        otherIndex,
-                    });
                     return false;
                 }
             }
@@ -441,55 +425,6 @@ const Cluster = ({ team }) => {
         newPositions[index] = adjustedPosition;
         updateClusterPositions(team, newPositions);
     };
-
-    const handleShuffle = useCallback(() => {
-        if (!clusterRef.current || unguessedWords.length === 0) return;
-
-        setIsShuffling(true);
-
-        // Get all possible grid positions
-        const gridPositions = unguessedWords.map((_, index) =>
-            getInitialPosition(index)
-        );
-
-        // Shuffle the grid positions
-        for (let i = gridPositions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [gridPositions[i], gridPositions[j]] = [
-                gridPositions[j],
-                gridPositions[i],
-            ];
-        }
-
-        // Calculate vectors from current to new positions
-        const vectors = gridPositions.map((newPos, index) => ({
-            x: newPos.x - initialPositions[index].x,
-            y: newPos.y - initialPositions[index].y,
-        }));
-
-        // Update positions in context to trigger animation
-        const newPositions = [...positions];
-        vectors.forEach((vector, index) => {
-            newPositions[index] = vector;
-        });
-        updateClusterPositions(team, newPositions);
-
-        // After animation, update initial positions and reset position offsets
-        setTimeout(() => {
-            setInitialPositions(gridPositions);
-            updateClusterPositions(
-                team,
-                Array(unguessedWords.length).fill(null)
-            );
-            setIsShuffling(false);
-        }, 300);
-    }, [
-        unguessedWords,
-        initialPositions,
-        team,
-        positions,
-        updateClusterPositions,
-    ]);
 
     const getTitle = () => {
         switch (team) {
@@ -543,6 +478,17 @@ const Cluster = ({ team }) => {
                     ref={constraintsRef}
                     className="absolute inset-0 flex-grow font-courier"
                 >
+                    <span
+                        className="absolute opacity-0 pointer-events-none text-xs sm:text-sm md:text-md px-1"
+                        ref={(el) => {
+                            if (el) {
+                                const rect = el.getBoundingClientRect();
+                                setWordHeight(rect.height);
+                            }
+                        }}
+                    >
+                        measurement
+                    </span>
                     {unguessedWords.map((word, index) => (
                         <Word
                             key={word.word} // Changed from index to word.word for stable keys
