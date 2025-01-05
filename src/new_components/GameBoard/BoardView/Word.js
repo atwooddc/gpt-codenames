@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
+import useGameStore from "../../../stores/gameStore";
+
 import { useWords } from "../../../context/WordsContext";
 
 const Word = ({
@@ -11,7 +13,9 @@ const Word = ({
     onDragEnd,
     onMeasure,
 }) => {
-    const { toggleSelected } = useWords();
+    const toggleSelected = useGameStore((state) => state.toggleSelected);
+
+    // const { toggleSelected } = useWords();
     const isDragging = useRef(false);
     const wordRef = useRef(null);
 
@@ -19,11 +23,11 @@ const Word = ({
         const measureWord = () => {
             if (wordRef.current) {
                 const rect = wordRef.current.getBoundingClientRect();
-                console.log("Measuring word:", {
-                    word: word.word,
-                    width: rect.width,
-                    height: rect.height,
-                });
+                // console.log("Measuring word:", {
+                //     word: word.word,
+                //     width: rect.width,
+                //     height: rect.height,
+                // });
                 onMeasure({
                     width: rect.width,
                     height: rect.height,
@@ -35,7 +39,7 @@ const Word = ({
         const timeoutId = setTimeout(measureWord, 0);
 
         return () => clearTimeout(timeoutId);
-    }, [word.word]);
+    }, [word.word, onMeasure]);
 
     if (
         typeof initialPosition?.x === "undefined" ||

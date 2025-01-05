@@ -15,13 +15,15 @@ const GameBoard = () => {
     };
 
     return (
-        <div className="flex flex-col space-y-8 -mt-8 px-4 lg:mt-0 mx-auto w-full sm:w-4/5 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5">
-            <HeaderButtons toggleRules={toggleRules} />
+        <div className="flex flex-col space-y-4 -mt-4 px-4 lg:mt-0 mx-auto w-full sm:w-4/5 md:w-4/5 lg:w-3/5 xl:w-1/2 2xl:w-2/5">
+            <div className="flex justify-end">
+                <HeaderButtons toggleRules={toggleRules} />
+            </div>
             {showRules && <RulesPopUp closeRules={toggleRules} />}
 
             <div className="relative aspect-[4/3] md:aspect-[16/9] w-full">
-                    {view === "grid" && <GridView />}
-                    {view === "table" && <ClusterView />}
+                {view === "grid" && <GridView />}
+                {view === "table" && <ClusterView />}
             </div>
 
             <FooterButtons />

@@ -1,10 +1,15 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Card from "./Card";
+import useGameStore from "../../../stores/gameStore";
+
 import { useWords } from "../../../context/WordsContext";
 
 const GridView = () => {
-    const { words, shuffleOrder } = useWords();
+    // const { words, shuffleOrder } = useWords();
+
+    const words = useGameStore((state) => state.words);
+    const shuffleOrder = useGameStore((state) => state.shuffleOrder);
 
     return (
         <div
@@ -20,7 +25,7 @@ const GridView = () => {
                         type: "spring",
                         stiffness: 200,
                         damping: 20,
-                        duration: 0.3
+                        duration: 0.3,
                     }}
                 >
                     <Card word={words[index]} />

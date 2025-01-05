@@ -2,13 +2,13 @@ import React from "react";
 
 const HeaderButtons = ({ toggleRules }) => {
     return (
-        <div className="flex mx-6">
+        <div className="flex">
             <button
                 className="text-button"
                 onClick={toggleRules}
             >
                 <svg
-                    className="h-8 w-8"
+                    className="h-6 w-6"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"

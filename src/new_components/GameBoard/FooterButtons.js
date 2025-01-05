@@ -7,17 +7,23 @@
 import React from "react";
 import { useView } from "../../context/ViewContext";
 import { triggerReset } from "../../services/resetPositionsEvent";
-import { useWords } from "../../context/WordsContext";
 
-const FooterButtons = ({}) => {
+import { useWords } from "../../context/WordsContext";
+import useGameStore from "../../stores/gameStore";
+
+const FooterButtons = () => {
+    // const { handleShuffle, outOfPosition } = useWords();
+
     const { view, toggleView } = useView();
-    const { handleShuffle, outOfPosition } = useWords();
+    
+    const handleShuffle = useGameStore(state => state.handleShuffle);
+    const outOfPosition = useGameStore(state => state.outOfPosition);
 
     return (
-        <div className="flex justify-evenly items-center w-full text-button">
+        <div className="flex justify-evenly items-center w-full text-button pt-2">
             <button disabled>
                 <svg
-                    className="h-8 w-8"
+                    className="h-7 w-7"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -33,7 +39,7 @@ const FooterButtons = ({}) => {
             {view === "grid" || !outOfPosition ? (
                 <button onClick={handleShuffle}>
                     <svg // shuffle
-                        className="h-8 w-8"
+                        className="h-7 w-7"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
@@ -56,7 +62,7 @@ const FooterButtons = ({}) => {
                     className="disabled:opacity-50"
                 >
                     <svg // reset
-                        className="h-8 w-8"
+                        className="h-7 w-7"
                         width="24"
                         height="24"
                         viewBox="0 0 24 24"
@@ -77,7 +83,7 @@ const FooterButtons = ({}) => {
             <button onClick={toggleView}>
                 {view === "grid" ? (
                     <svg
-                        className="h-8 w-8"
+                        className="h-7 w-7"
                         width="24"
                         height="24"
                         viewBox="0 0 24 24"
@@ -95,7 +101,7 @@ const FooterButtons = ({}) => {
                     </svg>
                 ) : (
                     <svg
-                        className="h-8 w-8"
+                        className="h-7 w-7"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"

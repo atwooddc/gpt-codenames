@@ -2,10 +2,13 @@ import React from "react";
 import clsx from "clsx";
 import { motion } from "framer-motion";
 
+import useGameStore from "../../../stores/gameStore";
+
 import { useWords } from "../../../context/WordsContext";
 
 const Card = ({ word }) => {
-    const { toggleSelected } = useWords();
+    // const { toggleSelected } = useWords();
+    const toggleSelected = useGameStore(state => state.toggleSelected);
 
     return (
         <motion.div
