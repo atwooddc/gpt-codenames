@@ -1,13 +1,18 @@
 import { create } from "zustand";
-import { createWordsSlice } from "./slices/wordsSlice";
+import { createClickHandlerSlice } from "./slices/clickHandlerSlice";
 import { createClueSlice } from "./slices/clueSlice";
-// Import other slices as you create them
+import { createGameMessageSlice } from "./slices/gameMessageSlice";
+import { createGameStateSlice } from "./slices/gameStateSlice";
+import { createGuessSlice } from "./slices/guessSlice";
+import { createWordsSlice } from "./slices/wordsSlice";
 
 const useGameStore = create((set, get) => ({
-    ...createWordsSlice(set, get),
     ...createClueSlice(set, get),
-    // Add other slices as you create them
-    // ...createGameStateSlice(set, get),
+    ...createGameMessageSlice(set, get),
+    ...createGameStateSlice(set, get),
+    ...createGuessSlice(set, get),
+    ...createWordsSlice(set, get),
+    ...createClickHandlerSlice(set, get),
 }));
 
 export default useGameStore;

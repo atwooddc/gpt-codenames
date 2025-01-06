@@ -11,6 +11,7 @@ export const createWordsSlice = (set, get) => ({
         bystander: [],
         assassin: [],
     },
+    selectedWords: [],
 
     initializeWords: async (isReset = false) => {
         // If it's not a reset and we're already initialized, do nothing
@@ -23,6 +24,7 @@ export const createWordsSlice = (set, get) => ({
             const gameWords = await loadWords();
             set({
                 words: gameWords,
+                selectedWords: [], // Reset selected words
                 isLoading: false,
                 shuffleOrder: Array.from(
                     { length: gameWords.length },
@@ -45,13 +47,21 @@ export const createWordsSlice = (set, get) => ({
 
     // Word operations
     toggleSelected: (selectedWord) =>
-        set((state) => ({
-            words: state.words.map((wordObj) =>
+        set((state) => {
+            const newWords = state.words.map((wordObj) =>
                 wordObj.word === selectedWord.word && wordObj.team === "user"
                     ? { ...wordObj, isSelected: !wordObj.isSelected }
                     : wordObj
-            ),
-        })),
+            );
+
+            // Update selectedWords at the same time
+            const newSelectedWords = newWords.filter((w) => w.isSelected);
+
+            return {
+                words: newWords,
+                selectedWords: newSelectedWords,
+            };
+        }),
 
     // Shuffle operations
     handleShuffle: () =>
@@ -62,13 +72,21 @@ export const createWordsSlice = (set, get) => ({
         })),
 
     // Selectors (can be accessed by other slices)
-    getSelectedWords: () => get().words.filter((w) => w.isSelected),
+    getSelectedWords: () => get().selectedWords,
     getUnguessedWords: () => get().words.filter((w) => !w.isGuessed),
     getTeamWords: (team) => get().words.filter((w) => w.team === team),
+    getUnguessedTeamWordStrings: (team) =>
+        get()
+            .words.filter((w) => w.team === team && !w.isGuessed)
+            .map((w) => w.word),
+    getWordStrings: () => get().words.map((w) => w.word),
+    getUnguessedWordStrings: () =>
+        get()
+            .words.filter((w) => !w.isGuessed)
+            .map((w) => w.word),
 
-    outOfPosition: false, // Add this to state
+    outOfPosition: false,
 
-    // Update the function to set the state instead of returning directly
     updateOutOfPosition: () => {
         const { clusterPositions } = get();
         const isOut = Object.values(clusterPositions).some(
@@ -79,7 +97,6 @@ export const createWordsSlice = (set, get) => ({
         set({ outOfPosition: isOut });
     },
 
-    // Update cluster positions and check out of position in one action
     updateClusterPositions: (team, positions) =>
         set((state) => {
             const newClusterPositions = {

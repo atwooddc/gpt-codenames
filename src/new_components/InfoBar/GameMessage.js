@@ -1,7 +1,11 @@
 import React from "react";
 
+import useGameStore from "../../stores/gameStore";
+
 const GameMessage = () => {
-    return <p>Game Message</p>;
+    const gameMessage = useGameStore((state) => state.gameMessage);
+
+    return <p>{gameMessage}</p>;
 };
 
 export default GameMessage;

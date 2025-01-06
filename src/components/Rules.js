@@ -35,7 +35,7 @@ const Rules = () => {
                             You're trying to help your AI teammate guess the 9 blue codenames before the other team guesses the 8 red ones.
                         </p>
                         <p className="mb-2">
-                            Each turn, you'll enter a one-word clue and select the codenames that match your clue.
+                            Each turn, you'll enter a one-word clue and select the codenames that match your clue. Note that clue validity is minimally enforced to prevent false negatives. 
                         </p>
                         <p className="mb-2">
                             Your AI teammate will guess codenames one by one based on your clue and the number of selected words.
