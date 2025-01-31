@@ -21,7 +21,7 @@ export const createClueSlice = (set, get) => ({
         set({
             input: value,
             hasSpace: /\s/.test(value),
-            isInvalidWord: getWordStrings().includes(value.toUpperCase()),
+            isInvalidWord: getWordStrings().includes(value.toLowerCase()),
         });
     },
 
@@ -35,23 +35,25 @@ export const createClueSlice = (set, get) => ({
     handleClueSubmit: async () => {
         const {
             input,
-            getSelectedWords,
+            numberSelected,
             setGameMessage,
             fetchGuesses,
             clearClueForm,
         } = get();
 
-        if (!input || input.trim() === "") return false;
-
         set({
             isProcessingClue: true,
             currentClue: input,
-            clueNumber: getSelectedWords().length,
+            clueNumber: numberSelected(),
             showClueInput: false,
         });
 
         try {
-            setGameMessage("Waiting for guesses...");
+            setGameMessage(
+                `Your clue is '${input}', ${numberSelected()}. Your GPTeammate is thinking...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+
             await fetchGuesses();
             clearClueForm();
             return true;
@@ -66,11 +68,16 @@ export const createClueSlice = (set, get) => ({
     },
 
     generateGPTClue: async () => {
-        const { getUnguessedTeamWordStrings, fetchGuesses, setGameMessage } =
-            get();
+        const {
+            getUnguessedTeamWordStrings,
+            fetchGuesses,
+            setGameMessage,
+            setClickHandler,
+        } = get();
 
         try {
             setGameMessage("GPT Spymaster is thinking...");
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // keep this
 
             const response = await api.getClue({
                 computerWords: getUnguessedTeamWordStrings("computer"),
@@ -90,7 +97,16 @@ export const createClueSlice = (set, get) => ({
                 showClueInput: false,
             });
 
+            setGameMessage(
+                `The GPT spymaster's clue is '${response.clue}', ${response.number}`
+            );
+
             await fetchGuesses();
+
+            // setClickHandler('fetchGuesses', async () => {
+            //     await get().fetchGuesses();
+            // });
+
             return true;
         } catch (error) {
             set({ error: "Failed to generate clue" });

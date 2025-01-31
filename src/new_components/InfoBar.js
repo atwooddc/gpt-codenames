@@ -2,7 +2,7 @@ import React from "react";
 
 import GameMessage from "./InfoBar/GameMessage";
 import ClueInput from "./InfoBar/ClueInput";
-
+import ClickToAdvance from "./InfoBar/ClickToAdvance";
 
 const InfoBar = () => {
     return (
@@ -10,6 +10,8 @@ const InfoBar = () => {
             <GameMessage />
 
             <ClueInput />
+
+            <ClickToAdvance />
         </div>
     );
 };

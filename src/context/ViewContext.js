@@ -8,7 +8,7 @@ export const useView = () => useContext(ViewContext);
 
 // Provider component
 export const ViewProvider = ({ children }) => {
-    const [view, setView] = useState("table"); // Default to grid view
+    const [view, setView] = useState("grid"); // Default to grid view
 
     const toggleView = () => {
         setView((prevView) => (prevView === "grid" ? "table" : "grid"));

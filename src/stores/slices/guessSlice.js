@@ -5,7 +5,12 @@ export const createGuessSlice = (set, get) => ({
     isProcessingGuess: false,
 
     fetchGuesses: async () => {
-        const { currentClue, clueNumber, getUnguessedWordStrings } = get();
+        const {
+            currentClue,
+            clueNumber,
+            getUnguessedWordStrings,
+            setClickHandler,
+        } = get();
 
         try {
             const response = await api.getGuesses(
@@ -19,7 +24,11 @@ export const createGuessSlice = (set, get) => ({
             }
 
             set({ guessQueue: response.guesses });
-            await get().processGuesses();
+
+            setClickHandler("processGuesses", async () => {
+                await get().processGuesses();
+            });
+
             return true;
         } catch (error) {
             set({ error: "Failed to fetch guesses" });
@@ -28,52 +37,81 @@ export const createGuessSlice = (set, get) => ({
     },
 
     processGuesses: async () => {
-        const { currentTurn, words, setGameMessage, endTurn } = get();
+        const { setGameMessage, endTurn, setClickHandler } = get();
         set({ isProcessingGuess: true });
 
         const processNextGuess = async () => {
-            const { guessQueue } = get();
-            
+            const { guessQueue, words, currentTurn } = get();
+            console.log("Processing next guess. Current queue:", guessQueue);
+
             if (guessQueue.length === 0) {
+                console.log("Guess queue is empty. Ending turn.");
                 set({ isProcessingGuess: false });
                 endTurn();
                 return;
             }
 
             const [currentGuess, ...remainingGuesses] = guessQueue;
-            const guessedWord = words.find(word => word.word === currentGuess);
+            console.log("Current guess:", currentGuess);
+
+            const guessedWord = words.find(
+                (word) => word.word === currentGuess
+            );
 
             if (!guessedWord) {
-                console.error("Invalid guess:", currentGuess);
+                console.error(
+                    "Invalid guess:",
+                    currentGuess,
+                    "Not found in words list."
+                );
                 set({ guessQueue: remainingGuesses });
                 processNextGuess();
                 return;
             }
 
-            // Update word state
-            set(state => ({
-                words: state.words.map(word =>
+            console.log(`Guessed word found:`, guessedWord);
+
+            setGameMessage(`${currentGuess} was guessed`);
+
+            setClickHandler("updateWords", async () => {
+                return;
+            });
+
+            set((state) => ({
+                words: state.words.map((word) =>
                     word.word === currentGuess
                         ? { ...word, isSelected: false, isGuessed: true }
                         : word
-                )
+                ),
             }));
 
-            setGameMessage(`${currentGuess} was guessed`);
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            console.log(
+                `Updated words list. ${currentGuess} marked as guessed.`
+            );
 
             // Check if guess was incorrect
             if (guessedWord.team !== currentTurn) {
-                setGameMessage(`${currentGuess} belongs to the other team! Turn ends.`);
+                console.log(
+                    `${currentGuess} belongs to the other team! Ending turn.`
+                );
+                console.log(guessedWord.team, currentTurn);
+                setGameMessage(
+                    `${currentGuess} belongs to the other team! Turn over.`
+                );
                 set({ guessQueue: [] });
                 endTurn();
                 return;
             }
 
+            console.log(
+                `${currentGuess} was correct! Continuing with next guess.`
+            );
             set({ guessQueue: remainingGuesses });
-            processNextGuess();
+            setClickHandler("processGuesses", async () => {
+                await processNextGuess();
+            });
         };
 
         await processNextGuess();
-    }
+    },
 });

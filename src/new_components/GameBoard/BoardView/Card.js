@@ -4,37 +4,73 @@ import { motion } from "framer-motion";
 
 import useGameStore from "../../../stores/gameStore";
 
-import { useWords } from "../../../context/WordsContext";
-
 const Card = ({ word }) => {
-    // const { toggleSelected } = useWords();
-    const toggleSelected = useGameStore(state => state.toggleSelected);
+    const toggleSelected = useGameStore((state) => state.toggleSelected);
+    const showClueInput = useGameStore((state) => state.showClueInput);
+
+    const handleCardTap = () => {
+        if (showClueInput && word.team === "user" && !word.isGuessed) {
+            toggleSelected(word);
+        }
+    };
+
+    const getBackgroundColor = (word) => {
+        if (word.isGuessed) {
+            switch (word.team) {
+                case "user":
+                    return "bg-dark-user";
+                case "computer":
+                    return "bg-dark-computer";
+                case "bystander":
+                    return "bg-dark-bystander";
+                case "assassin":
+                    return "bg-assassin";
+                default:
+                    return "bg-background";
+            }
+        }
+        switch (word.team) {
+            case "user":
+                return "bg-user";
+            case "computer":
+                return "bg-computer";
+            case "bystander":
+                return "bg-bystander";
+            case "assassin":
+                return "bg-assassin";
+            default:
+                return "bg-background";
+        }
+    };
 
     return (
         <motion.div
-            onClick={() => toggleSelected(word)}
+            onTapStart={handleCardTap}
             className={clsx(
                 "h-full w-full rounded-sm font-courier flex justify-center items-center cursor-pointer select-none",
+                getBackgroundColor(word),
                 {
-                    "bg-user": word.team === "user",
-                    "bg-computer": word.team === "computer",
-                    "bg-bystander": word.team === "bystander",
-                    "bg-assassin": word.team === "assassin",
-                    "text-sm font-bold": word.isSelected,
-                    "text-xs": !word.isSelected,
-                    outline: word.isSelected,
+                    "text-sm font-bold outline":
+                        word.isSelected || window?.motionHovered,
+                    "text-xs": !word.isSelected && !window?.motionHovered,
                 }
             )}
-            whileTap={{
-                scale: 1.1,
-                transition: { duration: 0.1 },
-            }}
+            initial={{ scale: 1 }}
+            whileTap={
+                (word.team === "user" && word.isSelected) ||
+                word.team !== "user"
+                    ? {
+                          scale: 1.1,
+                          transition: { duration: 0.1 },
+                      }
+                    : {}
+            }
             animate={{
                 scale: 1,
                 transition: { duration: 0.2 },
             }}
         >
-            {word.word}
+            {!word.isGuessed && word.word}
         </motion.div>
     );
 };

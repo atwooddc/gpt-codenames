@@ -21,7 +21,7 @@ const GameBoard = () => {
             </div>
             {showRules && <RulesPopUp closeRules={toggleRules} />}
 
-            <div className="relative aspect-[4/3] md:aspect-[16/9] w-full">
+            <div className="relative aspect-[4/3] md:aspect-[16/9] w-full px-1">
                 {view === "grid" && <GridView />}
                 {view === "table" && <ClusterView />}
             </div>

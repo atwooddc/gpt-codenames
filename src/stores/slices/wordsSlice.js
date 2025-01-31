@@ -11,7 +11,6 @@ export const createWordsSlice = (set, get) => ({
         bystander: [],
         assassin: [],
     },
-    selectedWords: [],
 
     initializeWords: async (isReset = false) => {
         // If it's not a reset and we're already initialized, do nothing
@@ -24,7 +23,6 @@ export const createWordsSlice = (set, get) => ({
             const gameWords = await loadWords();
             set({
                 words: gameWords,
-                selectedWords: [], // Reset selected words
                 isLoading: false,
                 shuffleOrder: Array.from(
                     { length: gameWords.length },
@@ -47,21 +45,13 @@ export const createWordsSlice = (set, get) => ({
 
     // Word operations
     toggleSelected: (selectedWord) =>
-        set((state) => {
-            const newWords = state.words.map((wordObj) =>
+        set((state) => ({
+            words: state.words.map((wordObj) =>
                 wordObj.word === selectedWord.word && wordObj.team === "user"
                     ? { ...wordObj, isSelected: !wordObj.isSelected }
                     : wordObj
-            );
-
-            // Update selectedWords at the same time
-            const newSelectedWords = newWords.filter((w) => w.isSelected);
-
-            return {
-                words: newWords,
-                selectedWords: newSelectedWords,
-            };
-        }),
+            ),
+        })),
 
     // Shuffle operations
     handleShuffle: () =>
@@ -72,7 +62,8 @@ export const createWordsSlice = (set, get) => ({
         })),
 
     // Selectors (can be accessed by other slices)
-    getSelectedWords: () => get().selectedWords,
+    getSelectedWords: () => get().words.filter((w) => w.isSelected),
+    numberSelected: () => get().words.filter((w) => w.isSelected).length,
     getUnguessedWords: () => get().words.filter((w) => !w.isGuessed),
     getTeamWords: (team) => get().words.filter((w) => w.team === team),
     getUnguessedTeamWordStrings: (team) =>

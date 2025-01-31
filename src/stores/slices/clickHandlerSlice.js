@@ -25,15 +25,16 @@ export const createClickHandlerSlice = (set, get) => ({
     },
 
     isValidClick: (event) => {
-        // Check if click was on an interactive element
-        const isActionElement = event.target.closest('.action');
-        const isButton = event.target.tagName.toLowerCase() === 'button';
-        const isInput = event.target.tagName.toLowerCase() === 'input';
-        const isLink = event.target.tagName.toLowerCase() === 'a';
-
-        // Consider click valid only if it's not on an interactive element
-        return !isActionElement && !isButton && !isInput && !isLink;
-    },
+        const target = event.target;
+        const hasButtonParent = target.parentElement?.tagName.toLowerCase() === 'button';
+        
+        const isActionElement = target.closest('.action');
+        const isButton = target.tagName.toLowerCase() === 'button';
+        const isInput = target.tagName.toLowerCase() === 'input';
+        const isLink = target.tagName.toLowerCase() === 'a'; 
+     
+        return !hasButtonParent && !isActionElement && !isButton && !isInput && !isLink;
+     },
 
     // Methods for other slices to use
     setClickHandler: (waitingFor, callback) => {
